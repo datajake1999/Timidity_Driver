@@ -1,0 +1,4 @@
+LIBRARY      timidity
+EXPORTS
+	DriverProc
+	modMessage

@@ -1,0 +1,4 @@
+LIBRARY "timcfg.cpl"
+
+EXPORTS
+    CPlApplet
