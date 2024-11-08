@@ -16,6 +16,7 @@ void ReadRegistry(DriverConfig *cfg)
 	RegQueryValueEx(hKey, REG_NAME_VOICES, 0, &dwType, (LPBYTE)&cfg->nVoices, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_AMP, 0, &dwType, (LPBYTE)&cfg->nAmp, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_ADJUSTPAN, 0, &dwType, (LPBYTE)&cfg->fAdjustPanning, &dwSize);
+	RegQueryValueEx(hKey, REG_NAME_MONO, 0, &dwType, (LPBYTE)&cfg->fMono, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_ANTIALIAS, 0, &dwType, (LPBYTE)&cfg->fAntialiasing, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_FASTDEC, 0, &dwType, (LPBYTE)&cfg->fFastDecay, &dwSize);
 
@@ -39,6 +40,7 @@ void WriteRegistry(DriverConfig *cfg)
 	RegSetValueEx(hKey, REG_NAME_VOICES, 0, REG_DWORD, (LPBYTE)&cfg->nVoices, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_AMP, 0, REG_DWORD, (LPBYTE)&cfg->nAmp, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_ADJUSTPAN, 0, REG_DWORD, (LPBYTE)&cfg->fAdjustPanning, sizeof(DWORD));
+	RegSetValueEx(hKey, REG_NAME_MONO, 0, REG_DWORD, (LPBYTE)&cfg->fMono, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_ANTIALIAS, 0, REG_DWORD, (LPBYTE)&cfg->fAntialiasing, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_FASTDEC, 0, REG_DWORD, (LPBYTE)&cfg->fFastDecay, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_CONFIGFILE, 0, REG_SZ, 

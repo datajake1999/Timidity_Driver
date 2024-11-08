@@ -57,6 +57,10 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		{
 			CheckDlgButton(hWnd, IDC_PAN, BST_CHECKED);
 		}
+		if (cfg.fMono)
+		{
+			CheckDlgButton(hWnd, IDC_MONO, BST_CHECKED);
+		}
 		if (cfg.fAntialiasing)
 		{
 			CheckDlgButton(hWnd, IDC_ANTI, BST_CHECKED);
@@ -170,6 +174,14 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			{
 				cfg.fAdjustPanning = FALSE;
 			}
+			if (IsDlgButtonChecked(hWnd, IDC_MONO))
+			{
+				cfg.fMono = TRUE;
+			}
+			else
+			{
+				cfg.fMono = FALSE;
+			}
 			if (IsDlgButtonChecked(hWnd, IDC_ANTI))
 			{
 				cfg.fAntialiasing = TRUE;
@@ -205,6 +217,7 @@ void ShowConfigDialog(HINSTANCE hInstance, HWND hWnd)
 	cfg.nVoices = DEFAULT_VOICES;
 	cfg.nAmp = DEFAULT_AMPLIFICATION;
 	cfg.fAdjustPanning = TRUE;
+	cfg.fMono = FALSE;
 	cfg.fAntialiasing = TRUE;
 	cfg.fFastDecay = TRUE;
 	InitCommonControls();

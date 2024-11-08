@@ -111,12 +111,13 @@ private:
 	WAVEHDR		*WaveHdr;
 	HANDLE		hEvent;
 	DWORD		chunks;
+	DWORD		numBytes;
 	DWORD		prevPlayPos;
 	DWORD		getPosWraps;
 	bool		stopProcessing;
 
 public:
-	int Init(Bit16s *buffer, unsigned int bufferSize, unsigned int chunkSize, bool useRingBuffer, unsigned int sampleRate) {
+	int Init(Bit16s *buffer, unsigned int bufferSize, unsigned int chunkSize, bool useRingBuffer, unsigned int sampleRate, unsigned int numChannels) {
 		DWORD callbackType = CALLBACK_NULL;
 		DWORD_PTR callback = (DWORD_PTR)NULL;
 		hEvent = NULL;
@@ -126,7 +127,17 @@ public:
 			callbackType = CALLBACK_EVENT;
 		}
 
-		PCMWAVEFORMAT wFormat = {WAVE_FORMAT_PCM, 2, sampleRate, sampleRate * 4, 4, 16};
+		if (numChannels > 2)
+		{
+			numChannels = 2;
+		}
+		else if (numChannels < 1)
+		{
+			numChannels = 1;
+		}
+		numBytes = 2 * numChannels;
+
+		PCMWAVEFORMAT wFormat = {WAVE_FORMAT_PCM, (WORD)numChannels, sampleRate, sampleRate * numBytes, (WORD)numBytes, 16};
 
 		// Open waveout device
 		int wResult = waveOutOpen(&hWaveOut, WAVE_MAPPER, (LPWAVEFORMATEX)&wFormat, callback, (DWORD_PTR)&midiSynth, callbackType);
@@ -139,10 +150,10 @@ public:
 		chunks = useRingBuffer ? 1 : bufferSize / chunkSize;
 		WaveHdr = new WAVEHDR[chunks];
 		LPSTR chunkStart = (LPSTR)buffer;
-		DWORD chunkBytes = 4 * chunkSize;
+		DWORD chunkBytes = numBytes * chunkSize;
 		for (UINT i = 0; i < chunks; i++) {
 			if (useRingBuffer) {
-				WaveHdr[i].dwBufferLength = 4 * bufferSize;
+				WaveHdr[i].dwBufferLength = numBytes * bufferSize;
 				WaveHdr[i].lpData = chunkStart;
 				WaveHdr[i].dwFlags = WHDR_BEGINLOOP | WHDR_ENDLOOP;
 				WaveHdr[i].dwLoops = -1L;
@@ -263,7 +274,7 @@ void WaveOutWin32::RenderingThread(void *) {
 			for (UINT i = 0; i < s_waveOut.chunks; i++) {
 				if (s_waveOut.WaveHdr[i].dwFlags & WHDR_DONE) {
 					allBuffersRendered = false;
-					midiSynth.Render((Bit16s *)s_waveOut.WaveHdr[i].lpData, s_waveOut.WaveHdr[i].dwBufferLength / 4);
+					midiSynth.Render((Bit16s *)s_waveOut.WaveHdr[i].lpData, s_waveOut.WaveHdr[i].dwBufferLength / s_waveOut.numBytes);
 					if (waveOutWrite(s_waveOut.hWaveOut, &s_waveOut.WaveHdr[i], sizeof(WAVEHDR)) != MMSYSERR_NOERROR) {
 						MessageBoxW(NULL, L"Failed to write block to device", L"Timidity", MB_OK | MB_ICONEXCLAMATION);
 					}
@@ -298,7 +309,7 @@ void MidiSynth::RenderAvailableSpace() {
 			return;
 		}
 	}
-	midiSynth.Render(buffer + 2 * framesRendered, framesToRender);
+	midiSynth.Render(buffer + numChannels * framesRendered, framesToRender);
 }
 
 // Renders totalFrames frames starting from bufpos
@@ -324,7 +335,7 @@ void MidiSynth::Render(Bit16s *bufpos, DWORD totalFrames) {
 		timid_render_short(&synth, bufpos, framesToRender);
 		synthEvent.Release();
 		framesRendered += framesToRender;
-		bufpos += 2 * framesToRender; // each frame consists of two samples for both the Left and Right channels
+		bufpos += numChannels * framesToRender; // each frame consists of two samples for both the Left and Right channels
 		totalFrames -= framesToRender;
 	}
 
@@ -348,6 +359,14 @@ void MidiSynth::LoadSettings() {
 	{
 		sampleRate=MIN_OUTPUT_RATE;
 	}
+	if (cfg.fMono)
+	{
+		numChannels = 1;
+	}
+	else
+	{
+		numChannels = 2;
+	}
 	bufferSize = MillisToFrames(100);
 	chunkSize = MillisToFrames(10);
 	midiLatency = MillisToFrames(0);
@@ -369,11 +388,12 @@ int MidiSynth::Init() {
 	cfg.nVoices = DEFAULT_VOICES;
 	cfg.nAmp = DEFAULT_AMPLIFICATION;
 	cfg.fAdjustPanning = TRUE;
+	cfg.fMono = FALSE;
 	cfg.fAntialiasing = TRUE;
 	cfg.fFastDecay = TRUE;
 	ReadRegistry(&cfg);
 	LoadSettings();
-	buffer = new Bit16s[2 * bufferSize]; // each frame consists of two samples for both the Left and Right channels
+	buffer = new Bit16s[numChannels * bufferSize]; // each frame consists of two samples for both the Left and Right channels
 
 	// Init synth
 	if (synthEvent.Init()) {
@@ -386,6 +406,7 @@ int MidiSynth::Init() {
 	timid_set_max_voices(&synth, cfg.nVoices);
 	timid_set_amplification(&synth, cfg.nAmp);
 	timid_set_immediate_panning(&synth, cfg.fAdjustPanning);
+	timid_set_mono(&synth, cfg.fMono);
 	timid_set_antialiasing(&synth, cfg.fAntialiasing);
 	timid_set_fast_decay(&synth, cfg.fFastDecay);
 #ifdef _UNICODE
@@ -398,7 +419,7 @@ int MidiSynth::Init() {
 		return 1;
 	}
 
-	UINT wResult = s_waveOut.Init(buffer, bufferSize, chunkSize, useRingBuffer, sampleRate);
+	UINT wResult = s_waveOut.Init(buffer, bufferSize, chunkSize, useRingBuffer, sampleRate, numChannels);
 	if (wResult) return wResult;
 
 	// Start playing stream

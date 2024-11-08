@@ -35,6 +35,7 @@ namespace Timidity {
 class MidiSynth {
 private:
 	unsigned int sampleRate;
+	unsigned int numChannels;
 	unsigned int midiLatency;
 	unsigned int bufferSize;
 	unsigned int chunkSize;
