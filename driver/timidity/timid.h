@@ -21,12 +21,10 @@
    timid.h
 */
 
+#include <stdio.h>
+
 #ifndef TIMID_H
 #define TIMID_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include "config.h"
 
@@ -204,6 +202,8 @@ typedef struct {
 	int32 control_ratio;
 	FLOAT_T master_volume;
 	int32 drumchannels;
+	int32 lost_notes;
+	int32 cut_notes;
 	int adjust_panning_immediately;
 	int voices;
 	uint8 rpn_msb[16];
@@ -226,6 +226,13 @@ int set_default_instrument(Timid *tm, char *name);
 void mix_voice(Timid *tm, int32 *buf, int v, int32 c);
 int recompute_envelope(Timid *tm, int v);
 void apply_envelope_to_amp(Timid *tm, int v);
+sample_t *resample_voice(Timid *tm, int v, int32 *countptr);
+void pre_resample(Timid *tm, Sample *sp);
+int read_config_file(Timid *tm, char *name);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 void timid_init(Timid *tm);
 int timid_load_config(Timid *tm, char *filename);
 void timid_unload_config(Timid *tm);
@@ -233,6 +240,7 @@ void timid_reload_config(Timid *tm);
 void timid_write_midi(Timid *tm, uint8 byte1, uint8 byte2, uint8 byte3);
 void timid_write_midi_packed(Timid *tm, uint32 data);
 void timid_write_sysex(Timid *tm, uint8 *buffer, int32 count);
+void timid_render_char(Timid *tm, uint8 *buffer, int32 count);
 void timid_render_short(Timid *tm, int16 *buffer, int32 count);
 void timid_render_float(Timid *tm, float *buffer, int32 count);
 void timid_panic(Timid *tm);
@@ -245,15 +253,13 @@ void timid_set_fast_decay(Timid *tm, int value);
 void timid_set_antialiasing(Timid *tm, int value);
 void timid_set_sample_rate(Timid *tm, int rate);
 void timid_set_control_rate(Timid *tm, int rate);
-int timid_set_default_instrument(Timid *tm, char *name);
+int timid_set_default_instrument(Timid *tm, char *filename);
 int timid_get_active_voices(Timid *tm);
 int timid_get_max_voices(Timid *tm);
+int timid_get_lost_notes(Timid *tm);
+int timid_get_cut_notes(Timid *tm);
 int timid_get_current_program(Timid *tm, int c);
 void timid_close(Timid *tm);
-sample_t *resample_voice(Timid *tm, int v, int32 *countptr);
-void pre_resample(Timid *tm, Sample *sp);
-int read_config_file(Timid *tm, char *name);
-
 #ifdef __cplusplus
 }
 #endif

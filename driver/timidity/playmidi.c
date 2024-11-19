@@ -68,6 +68,8 @@ static void reset_midi(Timid *tm)
         tm->rpn_lsb[i]=0xff;
     }
     reset_voices(tm);
+    tm->lost_notes = 0;
+    tm->cut_notes = 0;
 }
 
 static void select_sample(Timid *tm, int v, Instrument *ip)
@@ -369,9 +371,12 @@ static void note_on(Timid *tm, MidiEvent *e)
         in the first place... Still, this needs to be fixed. Perhaps
         we could use a reserve of voices to play dying notes only. */
         
+        tm->cut_notes++;
         tm->voice[lowest].status=VOICE_FREE;
         start_note(tm,e,lowest);
     }
+    else
+    tm->lost_notes++;
 }
 
 static void finish_note(Timid *tm, int i)
@@ -833,7 +838,10 @@ void timid_write_midi_packed(Timid *tm, uint32 data)
 
 void timid_write_sysex(Timid *tm, uint8 *buffer, int32 count)
 {
-    const uint8 reset_array[6] = {0xF0, 0x7E, 0x7F, 0x09, 0x01, 0xF7};
+    const uint8 gm_reset_array[6] = {0xF0, 0x7E, 0x7F, 0x09, 0x01, 0xF7};
+    const uint8 gm2_reset_array[6] = {0xF0, 0x7E, 0x7F, 0x09, 0x03, 0xF7};
+    const uint8 gs_reset_array[11] = {0xF0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7F, 0x00, 0x41, 0xF7};
+    const uint8 xg_reset_array[9] = {0xF0, 0x43, 0x10, 0x4C, 0x00, 0x00, 0x7E, 0x00, 0xF7};
     if (!tm || !buffer)
     {
         return;
@@ -842,9 +850,76 @@ void timid_write_sysex(Timid *tm, uint8 *buffer, int32 count)
     {
         return;
     }
-    if (count == 6 && memcmp(&reset_array[0], buffer, 6) == 0)
+    if (count == 6 && memcmp(&gm_reset_array[0], buffer, 6) == 0)
     {
         reset_midi(tm);
+    }
+    else if (count == 6 && memcmp(&gm2_reset_array[0], buffer, 6) == 0)
+    {
+        reset_midi(tm);
+    }
+    else if (count == 11 && memcmp(&gs_reset_array[0], buffer, 11) == 0)
+    {
+        reset_midi(tm);
+    }
+    else if (count == 9 && memcmp(&xg_reset_array[0], buffer, 9) == 0)
+    {
+        reset_midi(tm);
+    }
+}
+
+void timid_render_char(Timid *tm, uint8 *buffer, int32 count)
+{
+    int i;
+    if (!tm || !buffer)
+    {
+        return;
+    }
+    if (!(tm->play_mode.encoding & PE_MONO))
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp[2];
+            do_compute_data(tm, &temp[0], 1);
+            temp[0] = temp[0] >> (32 - 8 - GUARD_BITS);
+            if (temp[0] > 127)
+            {
+                temp[0] = 127;
+            }
+            else if (temp[0] < -128)
+            {
+                temp[0] = -128;
+            }
+            buffer[i*2+0] = (uint8)temp[0] + 128;
+            temp[1] = temp[1] >> (32 - 8 - GUARD_BITS);
+            if (temp[1] > 127)
+            {
+                temp[1] = 127;
+            }
+            else if (temp[1] < -128)
+            {
+                temp[1] = -128;
+            }
+            buffer[i*2+1] = (uint8)temp[1] + 128;
+        }
+    }
+    else
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp;
+            do_compute_data(tm, &temp, 1);
+            temp = temp >> (32 - 8 - GUARD_BITS);
+            if (temp > 127)
+            {
+                temp = 127;
+            }
+            else if (temp < -128)
+            {
+                temp = -128;
+            }
+            buffer[i] = (uint8)temp + 128;
+        }
     }
 }
 
@@ -1091,13 +1166,17 @@ void timid_set_control_rate(Timid *tm, int rate)
     timid_reload_config(tm);
 }
 
-int timid_set_default_instrument(Timid *tm, char *name)
+int timid_set_default_instrument(Timid *tm, char *filename)
 {
-    if (!tm)
+    if (!tm || !filename)
     {
         return 0;
     }
-    return set_default_instrument(tm, name);
+    if (set_default_instrument(tm, filename) == 0)
+    {
+        return 1;
+    }
+    return 0;
 }
 
 int timid_get_active_voices(Timid *tm)
@@ -1123,6 +1202,24 @@ int timid_get_max_voices(Timid *tm)
         return 0;
     }
     return tm->voices;
+}
+
+int timid_get_lost_notes(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->lost_notes;
+}
+
+int timid_get_cut_notes(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->cut_notes;
 }
 
 int timid_get_current_program(Timid *tm, int c)
