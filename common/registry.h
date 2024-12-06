@@ -1,10 +1,6 @@
 #ifndef REGISTRY_H
 #define REGISTRY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct {
 	TCHAR szConfigFile[MAX_PATH];
 	int nSampleRate;
@@ -28,9 +24,11 @@ typedef struct {
 #define REG_NAME_ANTIALIAS		_T("Antialiasing")
 #define REG_NAME_FASTDEC		_T("FastDecay")
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 void ReadRegistry(DriverConfig *cfg);
 void WriteRegistry(DriverConfig *cfg);
-
 #ifdef __cplusplus
 }
 #endif
