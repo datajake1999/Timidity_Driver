@@ -474,6 +474,21 @@ int strip_tail)
         if (sp->note_to_use && !(sp->modes & MODES_LOOPING))
         pre_resample(tm, sp);
         
+#ifdef LOOKUP_HACK
+        /* Squash the 16-bit data into 8 bits. */
+        {
+            uint8 *gulp,*ulp;
+            int16 *swp;
+            int l=sp->data_length >> FRACTION_BITS;
+            gulp=ulp=(uint8 *)safe_malloc(l+1);
+            swp=(int16 *)sp->data;
+            while(l--)
+            *ulp++ = (*swp++ >> 8) & 0xFF;
+            free(sp->data);
+            sp->data=(sample_t *)gulp;
+        }
+#endif
+        
         if (strip_tail==1)
         {
             /* Let's not really, just say we did. */
@@ -522,35 +537,36 @@ static int fill_bank(Timid *tm, int dr, int b)
 
 int load_instruments(Timid *tm)
 {
-	int errors;
-	int i;
-	for (i = 0; i < 128; i++) {
-		if (tm->tonebank[i])
-			errors += fill_bank(tm, 0, i);
-		if (tm->drumset[i])
-			errors += fill_bank(tm, 1, i);
-	}
-	return errors;
+    int errors;
+    int i;
+    for (i=0; i<128; i++)
+    {
+        if (tm->tonebank[i])
+            errors += fill_bank(tm, 0, i);
+        if (tm->drumset[i])
+            errors += fill_bank(tm, 1, i);
+    }
+    return errors;
 }
 
 void free_instruments(Timid *tm)
 {
-	int i;
-	for (i = 0; i < 128; i++)
-	{
-		if (tm->tonebank[i])
-		{
-			free_bank(tm, 0, i);
-			free(tm->tonebank[i]);
-			tm->tonebank[i] = 0;
-		}
-		if (tm->drumset[i])
-		{
-			free_bank(tm, 1, i);
-			free(tm->drumset[i]);
-			tm->drumset[i] = 0;
-		}
-	}
+    int i;
+    for (i=0; i<128; i++)
+    {
+        if (tm->tonebank[i])
+        {
+            free_bank(tm, 0, i);
+            free(tm->tonebank[i]);
+            tm->tonebank[i] = 0;
+        }
+        if (tm->drumset[i])
+        {
+            free_bank(tm, 1, i);
+            free(tm->drumset[i]);
+            tm->drumset[i] = 0;
+        }
+    }
 }
 
 int set_default_instrument(Timid *tm, char *name)
@@ -563,4 +579,14 @@ int set_default_instrument(Timid *tm, char *name)
     tm->default_instrument=ip;
     tm->default_program=SPECIAL_PROGRAM;
     return 0;
+}
+
+void free_default_instrument(Timid *tm)
+{
+    if (tm->default_instrument)
+    {
+        free_instrument(tm->default_instrument);
+        tm->default_instrument=0;
+        tm->default_program=DEFAULT_PROGRAM;
+    }
 }

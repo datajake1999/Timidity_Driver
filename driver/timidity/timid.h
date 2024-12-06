@@ -178,13 +178,23 @@ typedef struct {
 
 #define ISDRUMCHANNEL(tm, c) ((tm->drumchannels & (1<<(c))))
 
+#ifdef LOOKUP_SINE
+FLOAT_T sine(int x);
+#else
+#include <math.h>
 #define sine(x) (sin((2*PI/1024.0) * (x)))
+#endif
 
 #define SINE_CYCLE_LENGTH 1024
 extern int32 freq_table[];
 extern FLOAT_T vol_table[];
 extern FLOAT_T bend_fine[];
 extern FLOAT_T bend_coarse[];
+extern uint8 *_l2u; /* 13-bit PCM to 8-bit u-law */
+extern uint8 _l2u_[]; /* used in LOOKUP_HACK */
+#ifdef LOOKUP_HACK
+extern int16 _u2l[];
+#endif
 
 typedef struct {
 	char current_filename[1024];
@@ -209,9 +219,19 @@ typedef struct {
 	uint8 rpn_msb[16];
 	uint8 rpn_lsb[16];
 	sample_t resample_buffer[AUDIO_BUFFER_SIZE];
+#ifdef LOOKUP_HACK
+	int32 *mixup;
+#ifdef LOOKUP_INTERPOLATION
+	int8 *iplookup;
+#endif
+#endif
 	char def_instr_name[256];
 	char last_config[1024];
 } Timid;
+
+typedef struct {
+	int8 data[3];
+} int24;
 
 FILE *open_file(Timid *tm, char *name, int decompress, int noise_mode);
 void add_to_pathlist(Timid *tm, char *s);
@@ -223,11 +243,14 @@ void antialiasing(Sample *sp, int32 output_rate);
 int load_instruments(Timid *tm);
 void free_instruments(Timid *tm);
 int set_default_instrument(Timid *tm, char *name);
+void free_default_instrument(Timid *tm);
 void mix_voice(Timid *tm, int32 *buf, int v, int32 c);
 int recompute_envelope(Timid *tm, int v);
 void apply_envelope_to_amp(Timid *tm, int v);
 sample_t *resample_voice(Timid *tm, int v, int32 *countptr);
 void pre_resample(Timid *tm, Sample *sp);
+void init_tables(Timid *tm);
+void free_tables(Timid *tm);
 int read_config_file(Timid *tm, char *name);
 
 #ifdef __cplusplus
@@ -242,7 +265,11 @@ void timid_write_midi_packed(Timid *tm, uint32 data);
 void timid_write_sysex(Timid *tm, uint8 *buffer, int32 count);
 void timid_render_char(Timid *tm, uint8 *buffer, int32 count);
 void timid_render_short(Timid *tm, int16 *buffer, int32 count);
+void timid_render_24(Timid *tm, int24 *buffer, int32 count);
+void timid_render_long(Timid *tm, int32 *buffer, int32 count);
 void timid_render_float(Timid *tm, float *buffer, int32 count);
+void timid_render_double(Timid *tm, double *buffer, int32 count);
+void timid_render_ulaw(Timid *tm, uint8 *buffer, int32 count);
 void timid_panic(Timid *tm);
 void timid_reset(Timid *tm);
 void timid_set_amplification(Timid *tm, int amplification);
@@ -253,12 +280,26 @@ void timid_set_fast_decay(Timid *tm, int value);
 void timid_set_antialiasing(Timid *tm, int value);
 void timid_set_sample_rate(Timid *tm, int rate);
 void timid_set_control_rate(Timid *tm, int rate);
+void timid_set_default_program(Timid *tm, int program);
+void timid_set_drum_channel(Timid *tm, int c, int enable);
 int timid_set_default_instrument(Timid *tm, char *filename);
+void timid_free_default_instrument(Timid *tm);
+void timid_get_config_name(Timid *tm, char *buffer, int32 count);
+int timid_get_amplification(Timid *tm);
 int timid_get_active_voices(Timid *tm);
 int timid_get_max_voices(Timid *tm);
+int timid_get_immediate_panning(Timid *tm);
+int timid_get_mono(Timid *tm);
+int timid_get_fast_decay(Timid *tm);
+int timid_get_antialiasing(Timid *tm);
+int timid_get_sample_rate(Timid *tm);
+int timid_get_control_rate(Timid *tm);
+int timid_get_default_program(Timid *tm);
+int timid_get_drum_channels(Timid *tm);
 int timid_get_lost_notes(Timid *tm);
 int timid_get_cut_notes(Timid *tm);
 int timid_get_current_program(Timid *tm, int c);
+int timid_millis2samples(Timid *tm, int millis);
 void timid_close(Timid *tm);
 #ifdef __cplusplus
 }

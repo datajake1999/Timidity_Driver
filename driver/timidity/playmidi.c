@@ -30,9 +30,9 @@ playmidi.c -- random stuff in need of rearrangement
 
 #include "timid.h"
 
-static void adjust_amplification(Timid *tm, int value)
+static void adjust_amplification(Timid *tm, int amplification)
 {
-    tm->master_volume = (double)(value) / 100.0L;
+    tm->master_volume = (double)(amplification) / 100.0L;
 }
 
 static void reset_voices(Timid *tm)
@@ -624,7 +624,7 @@ static void do_compute_data(Timid *tm, int32 *buffer, int32 count)
     for (i=0; i<tm->voices; i++)
     {
         if(tm->voice[i].status != VOICE_FREE)
-            mix_voice(tm, buffer, i, count);
+			mix_voice(tm, buffer, i, count);
     }
 }
 
@@ -634,14 +634,20 @@ void timid_init(Timid *tm)
     {
         return;
     }
+    tm->default_program=DEFAULT_PROGRAM;
     tm->antialiasing_allowed=1;
+#ifdef FAST_DECAY
     tm->fast_decay=1;
+#else
+    tm->fast_decay=0;
+#endif
     tm->voices=DEFAULT_VOICES;
     tm->play_mode.rate=DEFAULT_RATE;
     tm->control_rate=CONTROLS_PER_SECOND;
     tm->control_ratio = tm->play_mode.rate/tm->control_rate;
     tm->drumchannels=DEFAULT_DRUMCHANNELS;
     tm->adjust_panning_immediately=1;
+    init_tables(tm);
     reset_midi(tm);
     adjust_amplification(tm, DEFAULT_AMPLIFICATION);
 }
@@ -655,7 +661,8 @@ int timid_load_config(Timid *tm, char *filename)
         return 0;
     }
     timid_unload_config(tm);
-    strcpy(directory, filename);
+    strncpy(directory, filename, 255);
+    directory[255]='\0';
     separator = strrchr(directory, PATH_SEP);
     if (separator) *separator = '\0';
     add_to_pathlist(tm, directory);
@@ -978,6 +985,122 @@ void timid_render_short(Timid *tm, int16 *buffer, int32 count)
     }
 }
 
+void timid_render_24(Timid *tm, int24 *buffer, int32 count)
+{
+    int i;
+    if (!tm || !buffer)
+    {
+        return;
+    }
+    if (!(tm->play_mode.encoding & PE_MONO))
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp[2];
+            do_compute_data(tm, &temp[0], 1);
+            temp[0] = temp[0] >> (32 - 24 - GUARD_BITS);
+            if (temp[0] > 8388607)
+            {
+                temp[0] = 8388607;
+            }
+            else if (temp[0] < -8388608)
+            {
+                temp[0] = -8388608;
+            }
+            buffer[i*2+0].data[0] = temp[0] & 0xff;
+            buffer[i*2+0].data[1] = (temp[0] >> 8) & 0xff;
+            buffer[i*2+0].data[2] = (temp[0] >> 16) & 0xff;
+            temp[1] = temp[1] >> (32 - 24 - GUARD_BITS);
+            if (temp[1] > 8388607)
+            {
+                temp[1] = 8388607;
+            }
+            else if (temp[1] < -8388608)
+            {
+                temp[1] = -8388608;
+            }
+            buffer[i*2+1].data[0] = temp[1] & 0xff;
+            buffer[i*2+1].data[1] = (temp[1] >> 8) & 0xff;
+            buffer[i*2+1].data[2] = (temp[1] >> 16) & 0xff;
+        }
+    }
+    else
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp;
+            do_compute_data(tm, &temp, 1);
+            temp = temp >> (32 - 24 - GUARD_BITS);
+            if (temp > 8388607)
+            {
+                temp = 8388607;
+            }
+            else if (temp < -8388608)
+            {
+                temp = -8388608;
+            }
+            buffer[i].data[0] = temp & 0xff;
+            buffer[i].data[1] = (temp >> 8) & 0xff;
+            buffer[i].data[2] = (temp >> 16) & 0xff;
+        }
+    }
+}
+
+void timid_render_long(Timid *tm, int32 *buffer, int32 count)
+{
+    int i;
+    if (!tm || !buffer)
+    {
+        return;
+    }
+    if (!(tm->play_mode.encoding & PE_MONO))
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp[2];
+            do_compute_data(tm, &temp[0], 1);
+            if (temp[0] > 268435455)
+            {
+                temp[0] = 268435455;
+            }
+            else if (temp[0] < -268435456)
+            {
+                temp[0] = -268435456;
+            }
+            temp[0] = temp[0] << GUARD_BITS;
+            buffer[i*2+0] = temp[0];
+            if (temp[1] > 268435455)
+            {
+                temp[1] = 268435455;
+            }
+            else if (temp[1] < -268435456)
+            {
+                temp[1] = -268435456;
+            }
+            temp[1] = temp[1] << GUARD_BITS;
+            buffer[i*2+1] = temp[1];
+        }
+    }
+    else
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp;
+            do_compute_data(tm, &temp, 1);
+            if (temp > 268435455)
+            {
+                temp = 268435455;
+            }
+            else if (temp < -268435456)
+            {
+                temp = -268435456;
+            }
+            temp = temp << GUARD_BITS;
+            buffer[i] = temp;
+        }
+    }
+}
+
 void timid_render_float(Timid *tm, float *buffer, int32 count)
 {
     int i;
@@ -1002,6 +1125,89 @@ void timid_render_float(Timid *tm, float *buffer, int32 count)
             int32 temp;
             do_compute_data(tm, &temp, 1);
             buffer[i] = temp / (float)268435456;
+        }
+    }
+}
+
+void timid_render_double(Timid *tm, double *buffer, int32 count)
+{
+    int i;
+    if (!tm || !buffer)
+    {
+        return;
+    }
+    if (!(tm->play_mode.encoding & PE_MONO))
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp[2];
+            do_compute_data(tm, &temp[0], 1);
+            buffer[i*2+0] = temp[0] / (double)268435456;
+            buffer[i*2+1] = temp[1] / (double)268435456;
+        }
+    }
+    else
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp;
+            do_compute_data(tm, &temp, 1);
+            buffer[i] = temp / (double)268435456;
+        }
+    }
+}
+
+void timid_render_ulaw(Timid *tm, uint8 *buffer, int32 count)
+{
+    int i;
+    if (!tm || !buffer)
+    {
+        return;
+    }
+    if (!(tm->play_mode.encoding & PE_MONO))
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp[2];
+            do_compute_data(tm, &temp[0], 1);
+            temp[0] = temp[0] >> (32 - 13 - GUARD_BITS);
+            if (temp[0] > 4095)
+            {
+                temp[0] = 4095;
+            }
+            else if (temp[0] < -4096)
+            {
+                temp[0] = -4096;
+            }
+            buffer[i*2+0] = _l2u[temp[0]];
+            temp[1] = temp[1] >> (32 - 13 - GUARD_BITS);
+            if (temp[1] > 4095)
+            {
+                temp[1] = 4095;
+            }
+            else if (temp[1] < -4096)
+            {
+                temp[1] = -4096;
+            }
+            buffer[i*2+1] = _l2u[temp[1]];
+        }
+    }
+    else
+    {
+        for (i=0; i<count; i++)
+        {
+            int32 temp;
+            do_compute_data(tm, &temp, 1);
+            temp = temp >> (32 - 13 - GUARD_BITS);
+            if (temp > 4095)
+            {
+                temp = 4095;
+            }
+            else if (temp < -4096)
+            {
+                temp = -4096;
+            }
+            buffer[i] = _l2u[temp];
         }
     }
 }
@@ -1166,17 +1372,69 @@ void timid_set_control_rate(Timid *tm, int rate)
     timid_reload_config(tm);
 }
 
+void timid_set_default_program(Timid *tm, int program)
+{
+    if (!tm)
+    {
+        return;
+    }
+    tm->default_program = program & 0x7f;
+}
+
+void timid_set_drum_channel(Timid *tm, int c, int enable)
+{
+    if (!tm)
+    {
+        return;
+    }
+    c = c & 0x0f;
+    if (enable) tm->drumchannels |= (1<<c);
+    else tm->drumchannels &= ~(1<<c);
+}
+
 int timid_set_default_instrument(Timid *tm, char *filename)
 {
     if (!tm || !filename)
     {
         return 0;
     }
+    reset_voices(tm);
     if (set_default_instrument(tm, filename) == 0)
     {
         return 1;
     }
     return 0;
+}
+
+void timid_free_default_instrument(Timid *tm)
+{
+    if (!tm)
+    {
+        return;
+    }
+    reset_voices(tm);
+    free_default_instrument(tm);
+}
+
+void timid_get_config_name(Timid *tm, char *buffer, int32 count)
+{
+    if (!tm || !buffer)
+    {
+        return;
+    }
+    if (strlen(tm->last_config))
+    {
+        strncpy(buffer, tm->last_config, count);
+    }
+}
+
+int timid_get_amplification(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return (int)(tm->master_volume * 100.0L);
 }
 
 int timid_get_active_voices(Timid *tm)
@@ -1202,6 +1460,78 @@ int timid_get_max_voices(Timid *tm)
         return 0;
     }
     return tm->voices;
+}
+
+int timid_get_immediate_panning(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->adjust_panning_immediately;
+}
+
+int timid_get_mono(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->play_mode.encoding;
+}
+
+int timid_get_fast_decay(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->fast_decay;
+}
+
+int timid_get_antialiasing(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->antialiasing_allowed;
+}
+
+int timid_get_sample_rate(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->play_mode.rate;
+}
+
+int timid_get_control_rate(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->control_rate;
+}
+
+int timid_get_default_program(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->default_program;
+}
+
+int timid_get_drum_channels(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->drumchannels;
 }
 
 int timid_get_lost_notes(Timid *tm)
@@ -1239,6 +1569,15 @@ int timid_get_current_program(Timid *tm, int c)
     }
 }
 
+int timid_millis2samples(Timid *tm, int millis)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return (int)((millis/1000.0)*tm->play_mode.rate);
+}
+
 void timid_close(Timid *tm)
 {
     if (!tm)
@@ -1247,4 +1586,6 @@ void timid_close(Timid *tm)
     }
     reset_midi(tm);
     timid_unload_config(tm);
+    free_default_instrument(tm);
+    free_tables(tm);
 }
