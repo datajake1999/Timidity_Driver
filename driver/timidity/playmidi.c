@@ -270,6 +270,8 @@ static void start_note(Timid *tm, MidiEvent *e, int i)
             return; /* No instrument? Then we can't play. */
         }
         
+        if (!ip) return;
+        
         if (ip->sample->note_to_use) /* Fixed-pitch instrument? */
         tm->voice[i].orig_frequency=freq_table[(int)(ip->sample->note_to_use)];
         else
@@ -778,6 +780,7 @@ void timid_unload_config(Timid *tm)
     free_instruments(tm);
     free_pathlist(tm);
     memset(tm->last_config, 0, sizeof(tm->last_config));
+    memset(tm->def_instr_name, 0, sizeof(tm->def_instr_name));
 }
 
 void timid_reload_config(Timid *tm)
