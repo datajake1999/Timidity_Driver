@@ -1387,11 +1387,13 @@ int timid_load_smf(Timid *tm, char *filename)
     timid_unload_smf(tm);
     tm->fp_midi = open_file(tm, filename, 1, OF_VERBOSE);
     if (!tm->fp_midi)
+    {
         return 0;
-    
+    }
     tm->event_list = read_midi_file(tm, tm->fp_midi, &tm->events_midi, &tm->sample_count);
-    if (!tm->event_list || !tm->events_midi || !tm->sample_count) {
-        close_file(tm->fp_midi);
+    if (!tm->event_list || !tm->events_midi || !tm->sample_count)
+    {
+        timid_unload_smf(tm);
         return 0;
     }
     read_midi_text(tm);
@@ -1402,7 +1404,7 @@ int timid_load_smf(Timid *tm, char *filename)
 int timid_play_smf(Timid *tm, int32 type, uint8 *buffer, int32 count)
 {
     int i;
-    if (!tm || !buffer || !tm->current_event)
+    if (!tm || !buffer || !tm->current_event || (tm->current_event->type == ME_EOT && !timid_get_active_voices(tm)))
     {
         return 0;
     }
@@ -1508,10 +1510,6 @@ int timid_play_smf(Timid *tm, int32 type, uint8 *buffer, int32 count)
             }
         }
         tm->current_sample++;
-    }
-    if (tm->current_event->type == ME_EOT && !timid_get_active_voices(tm))
-    {
-        return 0;
     }
     return 1;
 }
