@@ -841,19 +841,20 @@ void timid_unload_config(Timid *tm)
     memset(tm->def_instr_name, 0, sizeof(tm->def_instr_name));
 }
 
-void timid_reload_config(Timid *tm)
+int timid_reload_config(Timid *tm)
 {
     if (!tm)
     {
-        return;
+        return 0;
     }
     if (strlen(tm->last_config))
     {
         char temp[1024];
         strncpy(temp, tm->last_config, 1023);
         temp[1023]='\0';
-        timid_load_config(tm, temp);
+        return timid_load_config(tm, temp);
     }
+    return 0;
 }
 
 void timid_write_midi(Timid *tm, uint8 byte1, uint8 byte2, uint8 byte3)
@@ -1606,15 +1607,15 @@ void timid_set_amplification(Timid *tm, int amplification)
     {
         return;
     }
+    reset_voices(tm);
     if (amplification > MAX_AMPLIFICATION)
     {
-        amplification=MAX_AMPLIFICATION;
+        amplification = MAX_AMPLIFICATION;
     }
     else if (amplification < 0)
     {
-        amplification=0;
+        amplification = 0;
     }
-    reset_voices(tm);
     adjust_amplification(tm, amplification);
 }
 
@@ -1624,15 +1625,15 @@ void timid_set_max_voices(Timid *tm, int voices)
     {
         return;
     }
+    reset_voices(tm);
     if (voices > MAX_VOICES)
     {
-        voices=MAX_VOICES;
+        voices = MAX_VOICES;
     }
     else if (voices < 1)
     {
-        voices=1;
+        voices = 1;
     }
-    reset_voices(tm);
     tm->voices = voices;
 }
 
@@ -1687,29 +1688,29 @@ void timid_set_sample_rate(Timid *tm, int rate)
     reset_voices(tm);
     if (rate > MAX_OUTPUT_RATE)
     {
-        rate=MAX_OUTPUT_RATE;
+        rate = MAX_OUTPUT_RATE;
     }
     else if (rate < MIN_OUTPUT_RATE)
     {
-        rate=MIN_OUTPUT_RATE;
+        rate = MIN_OUTPUT_RATE;
     }
     tm->play_mode.rate = rate;
     if (tm->control_rate > tm->play_mode.rate)
     {
-        tm->control_rate=tm->play_mode.rate;
+        tm->control_rate = tm->play_mode.rate;
     }
     else if (tm->control_rate < tm->play_mode.rate/MAX_CONTROL_RATIO)
     {
-        tm->control_rate=tm->play_mode.rate/MAX_CONTROL_RATIO;
+        tm->control_rate = tm->play_mode.rate/MAX_CONTROL_RATIO;
     }
     tm->control_ratio = tm->play_mode.rate/tm->control_rate;
     if (tm->control_ratio > MAX_CONTROL_RATIO)
     {
-        tm->control_ratio=MAX_CONTROL_RATIO;
+        tm->control_ratio = MAX_CONTROL_RATIO;
     }
     else if (tm->control_ratio < 1)
     {
-        tm->control_ratio=1;
+        tm->control_ratio = 1;
     }
     timid_reload_config(tm);
 }
@@ -1724,20 +1725,20 @@ void timid_set_control_rate(Timid *tm, int rate)
     tm->control_rate = rate;
     if (tm->control_rate > tm->play_mode.rate)
     {
-        tm->control_rate=tm->play_mode.rate;
+        tm->control_rate = tm->play_mode.rate;
     }
     else if (tm->control_rate < tm->play_mode.rate/MAX_CONTROL_RATIO)
     {
-        tm->control_rate=tm->play_mode.rate/MAX_CONTROL_RATIO;
+        tm->control_rate = tm->play_mode.rate/MAX_CONTROL_RATIO;
     }
     tm->control_ratio = tm->play_mode.rate/tm->control_rate;
     if (tm->control_ratio > MAX_CONTROL_RATIO)
     {
-        tm->control_ratio=MAX_CONTROL_RATIO;
+        tm->control_ratio = MAX_CONTROL_RATIO;
     }
     else if (tm->control_ratio < 1)
     {
-        tm->control_ratio=1;
+        tm->control_ratio = 1;
     }
     timid_reload_config(tm);
 }
