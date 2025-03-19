@@ -722,7 +722,15 @@ static void read_midi_text(Timid *tm)
     uint32 buff;
     uint32 read;
 
+    if (!tm->fp_midi)
+        return;
+
     fseek(tm->fp_midi, 0, SEEK_SET);
+
+	if (fread(&buff, 1, 4, tm->fp_midi) != 4 || buff != 0x6468544d) {
+        fseek(tm->fp_midi, 0, SEEK_SET);
+        return;
+    }
 
     while (fread(&buff, 1, 4, tm->fp_midi) == 4)
     {
@@ -730,6 +738,11 @@ static void read_midi_text(Timid *tm)
             break;
 
         fseek(tm->fp_midi, -3, SEEK_CUR);
+    }
+
+    if (buff != 0x6B72544D) {
+        fseek(tm->fp_midi, 0, SEEK_SET);
+        return;
     }
 
     fseek(tm->fp_midi, 4, SEEK_CUR);
@@ -801,12 +814,13 @@ void timid_init(Timid *tm)
 int timid_load_config(Timid *tm, char *filename)
 {
     char directory[256];
-    char *separator;
+    char *separator=0;
     if (!tm || !filename)
     {
         return 0;
     }
     timid_unload_config(tm);
+    memset(directory, 0, sizeof(directory));
     strncpy(directory, filename, 255);
     directory[255]='\0';
     separator=strrchr(directory, PATH_SEP);
@@ -837,8 +851,8 @@ void timid_unload_config(Timid *tm)
     reset_voices(tm);
     free_instruments(tm);
     free_pathlist(tm);
-    memset(tm->last_config, 0, sizeof(tm->last_config));
     memset(tm->def_instr_name, 0, sizeof(tm->def_instr_name));
+    memset(tm->last_config, 0, sizeof(tm->last_config));
 }
 
 int timid_reload_config(Timid *tm)
@@ -850,6 +864,7 @@ int timid_reload_config(Timid *tm)
     if (strlen(tm->last_config))
     {
         char temp[1024];
+        memset(temp, 0, sizeof(temp));
         strncpy(temp, tm->last_config, 1023);
         temp[1023]='\0';
         return timid_load_config(tm, temp);
@@ -1400,7 +1415,26 @@ int timid_load_smf(Timid *tm, char *filename)
     }
     read_midi_text(tm);
     skip_to(tm, 0);
+    strncpy(tm->last_smf, filename, 1023);
+    tm->last_smf[1023]='\0';
     return 1;
+}
+
+int timid_reload_smf(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    if (strlen(tm->last_smf))
+    {
+        char temp[1024];
+        memset(temp, 0, sizeof(temp));
+        strncpy(temp, tm->last_smf, 1023);
+        temp[1023]='\0';
+        return timid_load_smf(tm, temp);
+    }
+    return 0;
 }
 
 int timid_play_smf(Timid *tm, int32 type, uint8 *buffer, int32 count)
@@ -1600,6 +1634,7 @@ void timid_unload_smf(Timid *tm)
     tm->current_sample = 0;
     memset(tm->song_title, 0, sizeof(tm->song_title));
     memset(tm->song_copyright, 0, sizeof(tm->song_copyright));
+    memset(tm->last_smf, 0, sizeof(tm->last_smf));
 }
 
 void timid_set_amplification(Timid *tm, int amplification)
@@ -1796,7 +1831,7 @@ int timid_get_config_name(Timid *tm, char *buffer, int32 count)
         return 0;
     }
     len = strlen(tm->last_config);
-    if (buffer)
+    if (buffer && len)
     {
         strncpy(buffer, tm->last_config, count);
     }
@@ -1952,6 +1987,21 @@ int timid_get_current_program(Timid *tm, int c)
     }
 }
 
+int timid_get_smf_name(Timid *tm, char *buffer, int32 count)
+{
+    int len;
+    if (!tm)
+    {
+        return 0;
+    }
+    len = strlen(tm->last_smf);
+    if (buffer && len)
+    {
+        strncpy(buffer, tm->last_smf, count);
+    }
+    return len;
+}
+
 int timid_get_event_count(Timid *tm)
 {
     if (!tm)
@@ -2019,7 +2069,7 @@ int timid_get_song_title(Timid *tm, char *buffer, int32 count)
         return 0;
     }
     len = strlen(tm->song_title);
-    if (buffer)
+    if (buffer && len)
     {
         strncpy(buffer, tm->song_title, count);
     }
@@ -2034,7 +2084,7 @@ int timid_get_song_copyright(Timid *tm, char *buffer, int32 count)
         return 0;
     }
     len = strlen(tm->song_copyright);
-    if (buffer)
+    if (buffer && len)
     {
         strncpy(buffer, tm->song_copyright, count);
     }
