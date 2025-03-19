@@ -3,6 +3,7 @@
 #include <commctrl.h>
 #include <tchar.h>
 #include "resource.h"
+#include "dialog.h"
 #include "../common/registry.h"
 #include "../driver/timidity/config.h"
 
