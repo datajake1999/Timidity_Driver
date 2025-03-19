@@ -210,10 +210,13 @@ extern int16 _u2l[];
 
 typedef struct {
   char current_filename[1024];
+  /* The paths in this list will be tried whenever we're reading a file */
   PathList *pathlist;
   ToneBank *tonebank[128];
   ToneBank *drumset[128];
+  /* This is a special instrument, used for all melodic programs */
   Instrument *default_instrument;
+  /* This is only used for tracks that don't specify a program */
   int default_program;
   int antialiasing_allowed;
   int fast_decay;
@@ -239,10 +242,13 @@ typedef struct {
   char song_title[256];
   char song_copyright[256];
   char last_smf[1024];
+  /* to avoid some unnecessary parameter passing */
   MidiEventList *evlist;
   int32 event_count;
   FILE *fp;
   int32 at;
+  /* These would both fit into 32 bits, but they are often added in
+  large multiples, so it's simpler to have two roomy ints */
   int32 sample_increment;
   int32 sample_correction;
   sample_t resample_buffer[AUDIO_BUFFER_SIZE];
@@ -346,7 +352,7 @@ void timid_set_control_rate(Timid *tm, int rate);
 void timid_set_default_program(Timid *tm, int program);
 void timid_set_drum_channel(Timid *tm, int c, int enable);
 
-/* Manage default instruments */
+/* Manage default instruments. These functions take effect on the next MIDI reset */
 int timid_set_default_instrument(Timid *tm, char *filename);
 void timid_free_default_instrument(Timid *tm);
 
