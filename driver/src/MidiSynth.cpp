@@ -381,7 +381,7 @@ void MidiSynth::LoadSettings() {
 
 int MidiSynth::Init() {
 	char szAnsi[MAX_PATH];
-	TCHAR szPath[MAX_PATH];
+	memset(szAnsi, 0, sizeof(szAnsi));
 	memset(&cfg, 0, sizeof(cfg));
 	cfg.nSampleRate = DEFAULT_RATE;
 	cfg.nControlRate = CONTROLS_PER_SECOND;
