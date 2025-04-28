@@ -877,6 +877,8 @@ void timid_write_midi(Timid *tm, uint8 byte1, uint8 byte2, uint8 byte3)
     uint8 type = byte1 & 0xf0;
     uint8 channel = byte1 & 0x0f;
     MidiEvent ev;
+    byte2 = byte2 & 0x7f;
+    byte3 = byte3 & 0x7f;
     if (!tm)
     {
         return;
@@ -1797,6 +1799,31 @@ void timid_set_drum_channel(Timid *tm, int c, int enable)
     c = c & 0x0f;
     if (enable) tm->drumchannels |= (1<<c);
     else tm->drumchannels &= ~(1<<c);
+}
+
+void timid_restore_defaults(Timid *tm)
+{
+    if (!tm)
+    {
+        return;
+    }
+    reset_voices(tm);
+    tm->default_program=DEFAULT_PROGRAM;
+    tm->antialiasing_allowed=1;
+#ifdef FAST_DECAY
+    tm->fast_decay=1;
+#else
+    tm->fast_decay=0;
+#endif
+    tm->voices=DEFAULT_VOICES;
+    tm->play_mode.rate=DEFAULT_RATE;
+    tm->play_mode.encoding=0;
+    tm->control_rate=CONTROLS_PER_SECOND;
+    tm->control_ratio = tm->play_mode.rate/tm->control_rate;
+    tm->drumchannels=DEFAULT_DRUMCHANNELS;
+    tm->adjust_panning_immediately=1;
+    adjust_amplification(tm, DEFAULT_AMPLIFICATION);
+    timid_reload_config(tm);
 }
 
 int timid_set_default_instrument(Timid *tm, char *filename)
