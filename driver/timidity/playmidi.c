@@ -608,6 +608,10 @@ static void play_midi(Timid *tm, MidiEvent *e)
 {
     if (e)
     {
+        if (ISQUIETCHANNEL(tm, e->channel))
+        {
+            return;
+        }
         switch(e->type)
         {
             
@@ -814,7 +818,7 @@ void timid_init(Timid *tm)
 int timid_load_config(Timid *tm, char *filename)
 {
     char directory[256];
-    char *separator=0;
+    char *separator;
     if (!tm || !filename)
     {
         return 0;
@@ -870,6 +874,238 @@ int timid_reload_config(Timid *tm)
         return timid_load_config(tm, temp);
     }
     return 0;
+}
+
+void timid_channel_note_on(Timid *tm, uint8 channel, uint8 note, uint8 velocity)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_NOTEON;
+    ev.a = note & 0x7f;
+    ev.b = velocity & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_note_off(Timid *tm, uint8 channel, uint8 note)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_NOTEOFF;
+    ev.a = note & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_key_pressure(Timid *tm, uint8 channel, uint8 note, uint8 velocity)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_KEYPRESSURE;
+    ev.a = note & 0x7f;
+    ev.b = velocity & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_volume(Timid *tm, uint8 channel, uint8 volume)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_MAINVOLUME;
+    ev.a = volume & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_pan(Timid *tm, uint8 channel, uint8 pan)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_PAN;
+    ev.a = pan & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_expression(Timid *tm, uint8 channel, uint8 expression)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_EXPRESSION;
+    ev.a = expression & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_sustain(Timid *tm, uint8 channel, uint8 sustain)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_SUSTAIN;
+    ev.a = sustain & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_pitch_wheel(Timid *tm, uint8 channel, uint16 pitch)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_PITCHWHEEL;
+    ev.a = pitch & 0x7f;
+    ev.b = (pitch >> 7) & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_pitch_range(Timid *tm, uint8 channel, uint8 range)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_PITCH_SENS;
+    ev.a = range & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_program(Timid *tm, uint8 channel, uint8 program)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_PROGRAM;
+    ev.a = program & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_set_bank(Timid *tm, uint8 channel, uint8 bank)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_TONE_BANK;
+    ev.a = bank & 0x7f;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_mono_mode(Timid *tm, uint8 channel)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_MONO;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_poly_mode(Timid *tm, uint8 channel)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_POLY;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_all_notes_off(Timid *tm, uint8 channel)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_ALL_NOTES_OFF;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_all_sounds_off(Timid *tm, uint8 channel)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_ALL_SOUNDS_OFF;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_reset_controllers(Timid *tm, uint8 channel)
+{
+    MidiEvent ev;
+    if (!tm)
+    {
+        return;
+    }
+    memset(&ev, 0, sizeof(ev));
+    ev.channel = channel & 0x0f;
+    ev.type = ME_RESET_CONTROLLERS;
+    play_midi(tm, &ev);
+}
+
+void timid_channel_control_change(Timid *tm, uint8 channel, uint8 controller, uint8 value)
+{
+    if (!tm)
+    {
+        return;
+    }
+    channel = channel & 0x0f;
+    timid_write_midi(tm, 0xb0+channel, controller & 0x7f, value & 0x7f);
 }
 
 void timid_write_midi(Timid *tm, uint8 byte1, uint8 byte2, uint8 byte3)
@@ -1326,6 +1562,46 @@ void timid_render_ulaw(Timid *tm, uint8 *buffer, int32 count)
     }
 }
 
+void timid_all_notes_off(Timid *tm)
+{
+    int i;
+    if (!tm)
+    {
+        return;
+    }
+    for (i=0; i<16; i++)
+    {
+        drop_sustain(tm, i);
+        all_notes_off(tm, i);
+    }
+}
+
+void timid_all_sounds_off(Timid *tm)
+{
+    int i;
+    if (!tm)
+    {
+        return;
+    }
+    for (i=0; i<16; i++)
+    {
+        all_sounds_off(tm, i);
+    }
+}
+
+void timid_reset_controllers(Timid *tm)
+{
+    int i;
+    if (!tm)
+    {
+        return;
+    }
+    for (i=0; i<16; i++)
+    {
+        reset_controllers(tm, i);
+    }
+}
+
 void timid_panic(Timid *tm)
 {
     if (!tm)
@@ -1492,12 +1768,7 @@ int timid_play_smf(Timid *tm, int32 type, uint8 *buffer, int32 count)
         }
         if (tm->current_sample == tm->sample_count)
         {
-            int i;
-            for (i=0; i<16; i++)
-            {
-                drop_sustain(tm, i);
-                all_notes_off(tm, i);
-            }
+            timid_all_notes_off(tm);
         }
         tm->current_sample += convert;
         count -= convert;
@@ -1743,15 +2014,32 @@ void timid_set_default_program(Timid *tm, int program)
     tm->default_program = program & 0x7f;
 }
 
-void timid_set_drum_channel(Timid *tm, int c, int enable)
+void timid_set_drum_channel(Timid *tm, int channel, int enable)
 {
     if (!tm)
     {
         return;
     }
-    c = c & 0x0f;
-    if (enable) tm->drumchannels |= (1<<c);
-    else tm->drumchannels &= ~(1<<c);
+    channel = channel & 0x0f;
+    if (enable) tm->drumchannels |= (1<<channel);
+    else tm->drumchannels &= ~(1<<channel);
+}
+
+void timid_set_quiet_channel(Timid *tm, int channel, int enable)
+{
+    if (!tm)
+    {
+        return;
+    }
+    channel = channel & 0x0f;
+    if (enable && !ISQUIETCHANNEL(tm, channel))
+    {
+        drop_sustain(tm, channel);
+        all_notes_off(tm, channel);
+        reset_controllers(tm, channel);
+    }
+    if (enable) tm->quietchannels |= (1<<channel);
+    else tm->quietchannels &= ~(1<<channel);
 }
 
 void timid_restore_defaults(Timid *tm)
@@ -1774,6 +2062,7 @@ void timid_restore_defaults(Timid *tm)
     tm->control_rate=CONTROLS_PER_SECOND;
     tm->control_ratio = tm->play_mode.rate/tm->control_rate;
     tm->drumchannels=DEFAULT_DRUMCHANNELS;
+    tm->quietchannels=0;
     tm->adjust_panning_immediately=1;
     adjust_amplification(tm, DEFAULT_AMPLIFICATION);
     timid_reload_config(tm);
@@ -1915,14 +2204,31 @@ int timid_get_default_program(Timid *tm)
     return tm->default_program;
 }
 
-int timid_get_drum_channel(Timid *tm, int c)
+int timid_get_drum_channel_enabled(Timid *tm, int channel)
 {
     if (!tm)
     {
         return 0;
     }
-    c = c & 0x0f;
-    if (ISDRUMCHANNEL(tm, c))
+    channel = channel & 0x0f;
+    if (ISDRUMCHANNEL(tm, channel))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int timid_get_quiet_channel_enabled(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    if (ISQUIETCHANNEL(tm, channel))
     {
         return 1;
     }
@@ -1950,21 +2256,108 @@ int timid_get_cut_notes(Timid *tm)
     return tm->cut_notes;
 }
 
-int timid_get_current_program(Timid *tm, int c)
+int timid_channel_get_volume(Timid *tm, int channel)
 {
     if (!tm)
     {
         return 0;
     }
-    c = c & 0x0f;
-    if (ISDRUMCHANNEL(tm, c))
+    channel = channel & 0x0f;
+    return tm->channel[channel].volume;
+}
+
+int timid_channel_get_pan(Timid *tm, int channel)
+{
+    if (!tm)
     {
-        return tm->channel[c].bank;
+        return 0;
+    }
+    channel = channel & 0x0f;
+    return tm->channel[channel].panning;
+}
+
+int timid_channel_get_expression(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    return tm->channel[channel].expression;
+}
+
+int timid_channel_get_sustain(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    return tm->channel[channel].sustain;
+}
+
+int timid_channel_get_pitch_wheel(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    return tm->channel[channel].pitchbend;
+}
+
+int timid_channel_get_pitch_range(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    return tm->channel[channel].pitchsens;
+}
+
+int timid_channel_get_program(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    if (ISDRUMCHANNEL(tm, channel))
+    {
+        return tm->channel[channel].bank;
     }
     else
     {
-        return tm->channel[c].program;
+        return tm->channel[channel].program;
     }
+}
+
+int timid_channel_get_bank(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    if (!ISDRUMCHANNEL(tm, channel))
+    {
+        return tm->channel[channel].bank;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+int timid_channel_get_mono(Timid *tm, int channel)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    channel = channel & 0x0f;
+    return tm->channel[channel].mono;
 }
 
 int timid_get_smf_name(Timid *tm, char *buffer, int32 count)
