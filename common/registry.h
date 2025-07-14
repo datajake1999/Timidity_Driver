@@ -10,7 +10,9 @@ typedef struct {
 	BOOL fAdjustPanning;
 	BOOL fMono;
 	BOOL fAntialiasing;
+	BOOL fPreResample;
 	BOOL fFastDecay;
+	BOOL fDynamicLoad;
 } DriverConfig;
 
 #define REG_KEY					_T("Software\\Datajake\\TimidityDriver")
@@ -22,7 +24,9 @@ typedef struct {
 #define REG_NAME_ADJUSTPAN		_T("AdjustPanning")
 #define REG_NAME_MONO			_T("Mono")
 #define REG_NAME_ANTIALIAS		_T("Antialiasing")
+#define REG_NAME_PRERESAMPLE		_T("PreResample")
 #define REG_NAME_FASTDEC		_T("FastDecay")
+#define REG_NAME_DYNALOAD		_T("DynamicLoad")
 
 #ifdef __cplusplus
 extern "C" {

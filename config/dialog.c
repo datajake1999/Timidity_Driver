@@ -66,9 +66,17 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		{
 			CheckDlgButton(hWnd, IDC_ANTI, BST_CHECKED);
 		}
+		if (cfg.fPreResample)
+		{
+			CheckDlgButton(hWnd, IDC_PRERES, BST_CHECKED);
+		}
 		if (cfg.fFastDecay)
 		{
 			CheckDlgButton(hWnd, IDC_FASTDEC, BST_CHECKED);
+		}
+		if (cfg.fDynamicLoad)
+		{
+			CheckDlgButton(hWnd, IDC_DYNALOAD, BST_CHECKED);
 		}
 		return TRUE;
 	case WM_COMMAND:
@@ -191,6 +199,14 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			{
 				cfg.fAntialiasing = FALSE;
 			}
+			if (IsDlgButtonChecked(hWnd, IDC_PRERES))
+			{
+				cfg.fPreResample = TRUE;
+			}
+			else
+			{
+				cfg.fPreResample = FALSE;
+			}
 			if (IsDlgButtonChecked(hWnd, IDC_FASTDEC))
 			{
 				cfg.fFastDecay = TRUE;
@@ -198,6 +214,14 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			else
 			{
 				cfg.fFastDecay = FALSE;
+			}
+			if (IsDlgButtonChecked(hWnd, IDC_DYNALOAD))
+			{
+				cfg.fDynamicLoad = TRUE;
+			}
+			else
+			{
+				cfg.fDynamicLoad = FALSE;
 			}
 			EndDialog(hWnd, TRUE);
 			return TRUE;
@@ -220,7 +244,9 @@ void ShowConfigDialog(HINSTANCE hInstance, HWND hWnd)
 	cfg.fAdjustPanning = TRUE;
 	cfg.fMono = FALSE;
 	cfg.fAntialiasing = TRUE;
+	cfg.fPreResample = TRUE;
 	cfg.fFastDecay = TRUE;
+	cfg.fDynamicLoad = FALSE;
 	InitCommonControls();
 	ReadRegistry(&cfg);
 	if (DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG), hWnd, (DLGPROC)DialogProc))

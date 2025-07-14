@@ -390,7 +390,9 @@ int MidiSynth::Init() {
 	cfg.fAdjustPanning = TRUE;
 	cfg.fMono = FALSE;
 	cfg.fAntialiasing = TRUE;
+	cfg.fPreResample = TRUE;
 	cfg.fFastDecay = TRUE;
+	cfg.fDynamicLoad = FALSE;
 	ReadRegistry(&cfg);
 	LoadSettings();
 	buffer = new Bit16s[numChannels * bufferSize]; // each frame consists of two samples for both the Left and Right channels
@@ -408,7 +410,9 @@ int MidiSynth::Init() {
 	timid_set_immediate_panning(&synth, cfg.fAdjustPanning);
 	timid_set_mono(&synth, cfg.fMono);
 	timid_set_antialiasing(&synth, cfg.fAntialiasing);
+	timid_set_pre_resample(&synth, cfg.fPreResample);
 	timid_set_fast_decay(&synth, cfg.fFastDecay);
+	timid_set_dynamic_instrument_load(&synth, cfg.fDynamicLoad);
 #ifdef _UNICODE
 	WideCharToMultiByte(CP_ACP, 0, cfg.szConfigFile, -1, szAnsi, MAX_PATH, NULL, NULL);
 #else
