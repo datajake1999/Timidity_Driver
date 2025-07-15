@@ -52,7 +52,7 @@ BEGIN
             VALUE "FileDescription", "Timidity Driver Configuration\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "timcfg\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024-2025\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "timcfg.exe\0"
             VALUE "PrivateBuild", "\0"
@@ -166,7 +166,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_ABOUTCAP            "About Timidity Driver"
-    IDS_ABOUTTXT            "Copyright (C) 2024 Datajake.\nBased on MIDI Plug-in for GSPlayer by Y.Nagamidori.\nAlso based on Windows OPL3 user mode driver by Nukeykt and Wohlstand.\n\nTimidity credits:\nTimidity 0.2i by Tuukka Toivonen.\nTimidity Win32 by Davide Moretti.\nTimidity Win95 by Nicolas Witczak."
+    IDS_ABOUTTXT            "Copyright (C) 2024-2025 Datajake.\nBased on MIDI Plug-in for GSPlayer by Y.Nagamidori.\nAlso based on Windows OPL3 user mode driver by Nukeykt and Wohlstand.\n\nTimidity credits:\nTimidity 0.2i by Tuukka Toivonen.\nTimidity Win32 by Davide Moretti.\nTimidity Win95 by Nicolas Witczak."
     IDS_CFGFLT              "Timidity Configuration Files(*.CFG)\0*.CFG\0Everything (*.*)\0*.*\0\0"
     IDS_CFGCAP              "Load Timidity Configuration"
     IDS_CPLNAME             "Timidity Configuration"
