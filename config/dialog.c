@@ -62,6 +62,10 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		{
 			CheckDlgButton(hWnd, IDC_MONO, BST_CHECKED);
 		}
+		if (cfg.f8Bit)
+		{
+			CheckDlgButton(hWnd, IDC_8BIT, BST_CHECKED);
+		}
 		if (cfg.fAntialiasing)
 		{
 			CheckDlgButton(hWnd, IDC_ANTI, BST_CHECKED);
@@ -191,6 +195,14 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			{
 				cfg.fMono = FALSE;
 			}
+			if (IsDlgButtonChecked(hWnd, IDC_8BIT))
+			{
+				cfg.f8Bit = TRUE;
+			}
+			else
+			{
+				cfg.f8Bit = FALSE;
+			}
 			if (IsDlgButtonChecked(hWnd, IDC_ANTI))
 			{
 				cfg.fAntialiasing = TRUE;
@@ -243,6 +255,7 @@ void ShowConfigDialog(HINSTANCE hInstance, HWND hWnd)
 	cfg.nAmp = DEFAULT_AMPLIFICATION;
 	cfg.fAdjustPanning = TRUE;
 	cfg.fMono = FALSE;
+	cfg.f8Bit = FALSE;
 	cfg.fAntialiasing = TRUE;
 	cfg.fPreResample = TRUE;
 	cfg.fFastDecay = TRUE;

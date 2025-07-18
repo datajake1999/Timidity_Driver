@@ -36,6 +36,7 @@ class MidiSynth {
 private:
 	unsigned int sampleRate;
 	unsigned int numChannels;
+	unsigned int bitDepth;
 	unsigned int midiLatency;
 	unsigned int bufferSize;
 	unsigned int chunkSize;
@@ -49,7 +50,7 @@ private:
 	Bit8u reverbTime;
 	Bit8u reverbLevel;
 
-	Bit16s *buffer;
+	Bit8u *buffer;
 	DWORD framesRendered;
 
 	Timid synth;
@@ -67,7 +68,7 @@ public:
 	void ResetSynth();
 	void PanicSynth();
 	void RenderAvailableSpace();
-	void Render(Bit16s *bufpos, DWORD totalFrames);
+	void Render(Bit8u *bufpos, DWORD totalFrames);
 	void PushMIDI(DWORD msg);
 	void PlaySysex(Bit8u *bufpos, DWORD len);
 };

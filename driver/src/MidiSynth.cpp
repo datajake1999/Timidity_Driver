@@ -117,7 +117,7 @@ private:
 	bool		stopProcessing;
 
 public:
-	int Init(Bit16s *buffer, unsigned int bufferSize, unsigned int chunkSize, bool useRingBuffer, unsigned int sampleRate, unsigned int numChannels) {
+	int Init(Bit8u *buffer, unsigned int bufferSize, unsigned int chunkSize, bool useRingBuffer, unsigned int sampleRate, unsigned int numChannels, unsigned int bitDepth) {
 		DWORD callbackType = CALLBACK_NULL;
 		DWORD_PTR callback = (DWORD_PTR)NULL;
 		hEvent = NULL;
@@ -135,9 +135,9 @@ public:
 		{
 			numChannels = 1;
 		}
-		numBytes = 2 * numChannels;
+		numBytes = (bitDepth / 8) * numChannels;
 
-		PCMWAVEFORMAT wFormat = {WAVE_FORMAT_PCM, (WORD)numChannels, sampleRate, sampleRate * numBytes, (WORD)numBytes, 16};
+		PCMWAVEFORMAT wFormat = {WAVE_FORMAT_PCM, (WORD)numChannels, sampleRate, sampleRate * numBytes, (WORD)numBytes, bitDepth};
 
 		// Open waveout device
 		int wResult = waveOutOpen(&hWaveOut, WAVE_MAPPER, (LPWAVEFORMATEX)&wFormat, callback, (DWORD_PTR)&midiSynth, callbackType);
@@ -274,7 +274,7 @@ void WaveOutWin32::RenderingThread(void *) {
 			for (UINT i = 0; i < s_waveOut.chunks; i++) {
 				if (s_waveOut.WaveHdr[i].dwFlags & WHDR_DONE) {
 					allBuffersRendered = false;
-					midiSynth.Render((Bit16s *)s_waveOut.WaveHdr[i].lpData, s_waveOut.WaveHdr[i].dwBufferLength / s_waveOut.numBytes);
+					midiSynth.Render((Bit8u *)s_waveOut.WaveHdr[i].lpData, s_waveOut.WaveHdr[i].dwBufferLength / s_waveOut.numBytes);
 					if (waveOutWrite(s_waveOut.hWaveOut, &s_waveOut.WaveHdr[i], sizeof(WAVEHDR)) != MMSYSERR_NOERROR) {
 						MessageBoxW(NULL, L"Failed to write block to device", L"Timidity", MB_OK | MB_ICONEXCLAMATION);
 					}
@@ -309,12 +309,12 @@ void MidiSynth::RenderAvailableSpace() {
 			return;
 		}
 	}
-	midiSynth.Render(buffer + numChannels * framesRendered, framesToRender);
+	midiSynth.Render(buffer + numChannels * (bitDepth / 8) * framesRendered, framesToRender);
 }
 
 // Renders totalFrames frames starting from bufpos
 // The number of frames rendered is added to the global counter framesRendered
-void MidiSynth::Render(Bit16s *bufpos, DWORD totalFrames) {
+void MidiSynth::Render(Bit8u *bufpos, DWORD totalFrames) {
 	while (totalFrames > 0) {
 		DWORD timeStamp;
 		// Incoming MIDI messages timestamped with the current audio playback position + midiLatency
@@ -332,10 +332,17 @@ void MidiSynth::Render(Bit16s *bufpos, DWORD totalFrames) {
 			framesToRender = totalFrames;
 		}
 		synthEvent.Wait();
-		timid_render_short(&synth, bufpos, framesToRender);
+		if (bitDepth == 16)
+		{
+			timid_render_short(&synth, (Bit16s *)bufpos, framesToRender);
+		}
+		else if (bitDepth == 8)
+		{
+			timid_render_char(&synth, (Bit8u *)bufpos, framesToRender);
+		}
 		synthEvent.Release();
 		framesRendered += framesToRender;
-		bufpos += numChannels * framesToRender; // each frame consists of two samples for both the Left and Right channels
+		bufpos += numChannels * (bitDepth / 8) * framesToRender; // each frame consists of two samples for both the Left and Right channels
 		totalFrames -= framesToRender;
 	}
 
@@ -353,11 +360,11 @@ void MidiSynth::LoadSettings() {
 	sampleRate = cfg.nSampleRate;
 	if (sampleRate > MAX_OUTPUT_RATE)
 	{
-		sampleRate=MAX_OUTPUT_RATE;
+		sampleRate = MAX_OUTPUT_RATE;
 	}
 	else if (sampleRate < MIN_OUTPUT_RATE)
 	{
-		sampleRate=MIN_OUTPUT_RATE;
+		sampleRate = MIN_OUTPUT_RATE;
 	}
 	if (cfg.fMono)
 	{
@@ -366,6 +373,14 @@ void MidiSynth::LoadSettings() {
 	else
 	{
 		numChannels = 2;
+	}
+	if (cfg.f8Bit)
+	{
+		bitDepth = 8;
+	}
+	else
+	{
+		bitDepth = 16;
 	}
 	bufferSize = MillisToFrames(100);
 	chunkSize = MillisToFrames(10);
@@ -389,13 +404,14 @@ int MidiSynth::Init() {
 	cfg.nAmp = DEFAULT_AMPLIFICATION;
 	cfg.fAdjustPanning = TRUE;
 	cfg.fMono = FALSE;
+	cfg.f8Bit = FALSE;
 	cfg.fAntialiasing = TRUE;
 	cfg.fPreResample = TRUE;
 	cfg.fFastDecay = TRUE;
 	cfg.fDynamicLoad = FALSE;
 	ReadRegistry(&cfg);
 	LoadSettings();
-	buffer = new Bit16s[numChannels * bufferSize]; // each frame consists of two samples for both the Left and Right channels
+	buffer = new Bit8u[numChannels * (bitDepth / 8) * bufferSize]; // each frame consists of two samples for both the Left and Right channels
 
 	// Init synth
 	if (synthEvent.Init()) {
@@ -423,11 +439,18 @@ int MidiSynth::Init() {
 		return 1;
 	}
 
-	UINT wResult = s_waveOut.Init(buffer, bufferSize, chunkSize, useRingBuffer, sampleRate, numChannels);
+	UINT wResult = s_waveOut.Init(buffer, bufferSize, chunkSize, useRingBuffer, sampleRate, numChannels, bitDepth);
 	if (wResult) return wResult;
 
 	// Start playing stream
-	timid_render_short(&synth, buffer, bufferSize);
+	if (bitDepth == 16)
+	{
+		timid_render_short(&synth, (Bit16s *)buffer, bufferSize);
+	}
+	else if (bitDepth == 8)
+	{
+		timid_render_char(&synth, (Bit8u *)buffer, bufferSize);
+	}
 	framesRendered = 0;
 
 	wResult = s_waveOut.Start();
