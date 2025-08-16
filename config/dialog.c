@@ -46,6 +46,19 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	switch (message)
 	{
 	case WM_INITDIALOG:
+		ZeroMemory(&cfg, sizeof(cfg));
+		cfg.nSampleRate = DEFAULT_RATE;
+		cfg.nControlRate = CONTROLS_PER_SECOND;
+		cfg.nVoices = DEFAULT_VOICES;
+		cfg.nAmp = DEFAULT_AMPLIFICATION;
+		cfg.fAdjustPanning = TRUE;
+		cfg.fMono = FALSE;
+		cfg.f8Bit = FALSE;
+		cfg.fAntialiasing = TRUE;
+		cfg.fPreResample = TRUE;
+		cfg.fFastDecay = TRUE;
+		cfg.fDynamicLoad = FALSE;
+		ReadRegistry(&cfg);
 		SendDlgItemMessage(hWnd, IDC_CTRATES, UDM_SETRANGE32, cfg.nSampleRate/MAX_CONTROL_RATIO, cfg.nSampleRate);
 		SendDlgItemMessage(hWnd, IDC_VOICESS, UDM_SETRANGE32, 1, MAX_VOICES);
 		SendDlgItemMessage(hWnd, IDC_AMPS, UDM_SETRANGE32, 0, MAX_AMPLIFICATION);
@@ -236,6 +249,7 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			{
 				cfg.fDynamicLoad = FALSE;
 			}
+			WriteRegistry(&cfg);
 			if (LOWORD(wParam) == IDOK)
 			{
 				EndDialog(hWnd, TRUE);
@@ -252,22 +266,6 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 void ShowConfigDialog(HINSTANCE hInstance, HWND hWnd)
 {
 	hInst = hInstance;
-	ZeroMemory(&cfg, sizeof(cfg));
-	cfg.nSampleRate = DEFAULT_RATE;
-	cfg.nControlRate = CONTROLS_PER_SECOND;
-	cfg.nVoices = DEFAULT_VOICES;
-	cfg.nAmp = DEFAULT_AMPLIFICATION;
-	cfg.fAdjustPanning = TRUE;
-	cfg.fMono = FALSE;
-	cfg.f8Bit = FALSE;
-	cfg.fAntialiasing = TRUE;
-	cfg.fPreResample = TRUE;
-	cfg.fFastDecay = TRUE;
-	cfg.fDynamicLoad = FALSE;
 	InitCommonControls();
-	ReadRegistry(&cfg);
-	if (DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG), hWnd, (DLGPROC)DialogProc))
-	{
-		WriteRegistry(&cfg);
-	}
+	DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG), hWnd, (DLGPROC)DialogProc);
 }
