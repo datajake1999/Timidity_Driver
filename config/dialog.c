@@ -142,6 +142,7 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		case IDC_ABOUT:
 			return AboutBox(hWnd);
 		case IDOK:
+		case IDC_APPLY:
 			GetDlgItemText(hWnd, IDC_CFG, cfg.szConfigFile, MAX_PATH);
 			cfg.nSampleRate = GetDlgItemInt(hWnd, IDC_SAMPRATE, NULL, FALSE);
 			if (cfg.nSampleRate > MAX_OUTPUT_RATE)
@@ -235,7 +236,10 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			{
 				cfg.fDynamicLoad = FALSE;
 			}
-			EndDialog(hWnd, TRUE);
+			if (LOWORD(wParam) == IDOK)
+			{
+				EndDialog(hWnd, TRUE);
+			}
 			return TRUE;
 		case IDCANCEL:
 			EndDialog(hWnd, FALSE);
