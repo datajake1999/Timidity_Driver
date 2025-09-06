@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <commctrl.h>
+#include <commdlg.h>
 #include <tchar.h>
 #include "resource.h"
 #include "dialog.h"
@@ -19,8 +20,8 @@ static BOOL AboutBox(HWND hWnd)
 {
 	if (hWnd)
 	{
-		char caption[MAX_PATH];
-		char text[MAX_PATH*2];
+		_TCHAR caption[MAX_PATH];
+		_TCHAR text[MAX_PATH*2];
 		ZeroMemory(caption, sizeof(caption));
 		ZeroMemory(text, sizeof(text));
 		LoadString(hInst, IDS_ABOUTCAP, caption, MAX_PATH);
