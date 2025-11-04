@@ -409,6 +409,9 @@ int MidiSynth::Init() {
 	cfg.fPreResample = TRUE;
 	cfg.fFastDecay = TRUE;
 	cfg.fDynamicLoad = FALSE;
+	cfg.nDefaultProgram = DEFAULT_PROGRAM;
+	cfg.nDrumChannels = DEFAULT_DRUMCHANNELS;
+	cfg.nQuietChannels = 0;
 	ReadRegistry(&cfg);
 	LoadSettings();
 	buffer = new Bit8u[numChannels * (bitDepth / 8) * bufferSize]; // each frame consists of two samples for both the Left and Right channels
@@ -429,6 +432,26 @@ int MidiSynth::Init() {
 	timid_set_pre_resample(&synth, cfg.fPreResample);
 	timid_set_fast_decay(&synth, cfg.fFastDecay);
 	timid_set_dynamic_instrument_load(&synth, cfg.fDynamicLoad);
+	timid_set_default_program(&synth, cfg.nDefaultProgram);
+	for (int i = 0; i < 16; i++)
+	{
+		if (cfg.nDrumChannels & (1<<i))
+		{
+			timid_set_drum_channel(&synth, i, 1);
+		}
+		else
+		{
+			timid_set_drum_channel(&synth, i, 0);
+		}
+		if (cfg.nQuietChannels & (1<<i))
+		{
+			timid_set_quiet_channel(&synth, i, 1);
+		}
+		else
+		{
+			timid_set_quiet_channel(&synth, i, 0);
+		}
+	}
 #ifdef _UNICODE
 	WideCharToMultiByte(CP_ACP, 0, cfg.szConfigFile, -1, szAnsi, MAX_PATH, NULL, NULL);
 #else

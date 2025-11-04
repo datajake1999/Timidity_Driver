@@ -14,6 +14,9 @@ typedef struct {
 	BOOL fPreResample;
 	BOOL fFastDecay;
 	BOOL fDynamicLoad;
+	int nDefaultProgram;
+	int nDrumChannels;
+	int nQuietChannels;
 } DriverConfig;
 
 #define REG_KEY					_T("Software\\Datajake\\TimidityDriver")
@@ -29,6 +32,9 @@ typedef struct {
 #define REG_NAME_PRERESAMPLE		_T("PreResample")
 #define REG_NAME_FASTDEC		_T("FastDecay")
 #define REG_NAME_DYNALOAD		_T("DynamicLoad")
+#define REG_NAME_DEFPROG		_T("DefaultProgram")
+#define REG_NAME_DRUMCHANNELS		_T("DrumChannels")
+#define REG_NAME_QUIETCHANNELS		_T("QuietChannels")
 
 #ifdef __cplusplus
 extern "C" {

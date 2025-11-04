@@ -32,6 +32,78 @@ static BOOL AboutBox(HWND hWnd)
 	return FALSE;
 }
 
+static BOOL WINAPI DrumDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	int i;
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		for (i = 0; i < 16; i++)
+		{
+			if (cfg.nDrumChannels & (1<<i))
+			{
+				CheckDlgButton(hWnd, IDC_DCHAN01+i, BST_CHECKED);
+			}
+		}
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			cfg.nDrumChannels = 0;
+			for (i = 0; i < 16; i++)
+			{
+				if (IsDlgButtonChecked(hWnd, IDC_DCHAN01+i))
+				{
+					cfg.nDrumChannels |= (1<<i);
+				}
+			}
+			EndDialog(hWnd, TRUE);
+			return TRUE;
+		case IDCANCEL:
+			EndDialog(hWnd, FALSE);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+static BOOL WINAPI QuietDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	int i;
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		for (i = 0; i < 16; i++)
+		{
+			if (cfg.nQuietChannels & (1<<i))
+			{
+				CheckDlgButton(hWnd, IDC_QCHAN01+i, BST_CHECKED);
+			}
+		}
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			cfg.nQuietChannels = 0;
+			for (i = 0; i < 16; i++)
+			{
+				if (IsDlgButtonChecked(hWnd, IDC_QCHAN01+i))
+				{
+					cfg.nQuietChannels |= (1<<i);
+				}
+			}
+			EndDialog(hWnd, TRUE);
+			return TRUE;
+		case IDCANCEL:
+			EndDialog(hWnd, FALSE);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	OPENFILENAME ofn;
@@ -59,10 +131,14 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		cfg.fPreResample = TRUE;
 		cfg.fFastDecay = TRUE;
 		cfg.fDynamicLoad = FALSE;
+		cfg.nDefaultProgram = DEFAULT_PROGRAM;
+		cfg.nDrumChannels = DEFAULT_DRUMCHANNELS;
+		cfg.nQuietChannels = 0;
 		ReadRegistry(&cfg);
 		SendDlgItemMessage(hWnd, IDC_CTRATES, UDM_SETRANGE32, cfg.nSampleRate/MAX_CONTROL_RATIO, cfg.nSampleRate);
 		SendDlgItemMessage(hWnd, IDC_VOICESS, UDM_SETRANGE32, 1, MAX_VOICES);
 		SendDlgItemMessage(hWnd, IDC_AMPS, UDM_SETRANGE32, 0, MAX_AMPLIFICATION);
+		SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_SETRANGE32, 0, 127);
 		SetDlgItemText(hWnd, IDC_CFG, cfg.szConfigFile);
 		SetDlgItemInt(hWnd, IDC_SAMPRATE, cfg.nSampleRate, FALSE);
 		SendDlgItemMessage(hWnd, IDC_CTRATES, UDM_SETPOS32, 0, cfg.nControlRate);
@@ -96,6 +172,7 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		{
 			CheckDlgButton(hWnd, IDC_DYNALOAD, BST_CHECKED);
 		}
+		SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_SETPOS32, 0, cfg.nDefaultProgram);
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -153,6 +230,12 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			default:
 				return FALSE;
 			}
+		case IDC_DRUMCHANNELS:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_DRUMDLG), hWnd, (DLGPROC)DrumDialogProc);
+			return TRUE;
+		case IDC_QUIETCHANNELS:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_QUIETDLG), hWnd, (DLGPROC)QuietDialogProc);
+			return TRUE;
 		case IDC_ABOUT:
 			return AboutBox(hWnd);
 		case IDOK:
@@ -249,6 +332,15 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			else
 			{
 				cfg.fDynamicLoad = FALSE;
+			}
+			cfg.nDefaultProgram = SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_GETPOS32, 0, 0);
+			if (cfg.nDefaultProgram > 127)
+			{
+				cfg.nDefaultProgram = 127;
+			}
+			else if (cfg.nDefaultProgram < 0)
+			{
+				cfg.nDefaultProgram = 0;
 			}
 			WriteRegistry(&cfg);
 			if (LOWORD(wParam) == IDOK)
