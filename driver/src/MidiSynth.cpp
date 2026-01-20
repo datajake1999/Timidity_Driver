@@ -137,7 +137,7 @@ public:
 		}
 		numBytes = (bitDepth / 8) * numChannels;
 
-		PCMWAVEFORMAT wFormat = {WAVE_FORMAT_PCM, (WORD)numChannels, sampleRate, sampleRate * numBytes, (WORD)numBytes, (WORD)bitDepth};
+		WAVEFORMATEX wFormat = {WAVE_FORMAT_PCM, (WORD)numChannels, sampleRate, sampleRate * numBytes, (WORD)numBytes, (WORD)bitDepth, 0};
 
 		// Open waveout device
 		int wResult = waveOutOpen(&hWaveOut, WAVE_MAPPER, (LPWAVEFORMATEX)&wFormat, callback, (DWORD_PTR)&midiSynth, callbackType);
