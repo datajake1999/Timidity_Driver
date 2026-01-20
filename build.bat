@@ -16,6 +16,9 @@ cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 config\*.c common\*.c
 link dialog.obj registry.obj winmain.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /OUT:X86\timcfg.exe
 link cpl.obj dialog.obj registry.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /dll /def:"config\cpl.def" /OUT:X86\timcfg.cpl
 del *.obj
+cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 common\*.c driver\timidity\*.c mid2wav\*.c
+link *.obj advapi32.lib bufferoverflowU.lib kernel32.lib user32.lib /nologo /OUT:X86\mid2wav.exe
+del *.obj
 copy installer\install.bat X86
 copy installer\uninstall.bat X86
 cd X86
@@ -36,6 +39,9 @@ cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 config\*.c common\*.c
 link dialog.obj registry.obj winmain.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /OUT:X64\timcfg.exe
 link cpl.obj dialog.obj registry.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /dll /def:"config\cpl.def" /OUT:X64\timcfg.cpl
 del *.obj
+cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 common\*.c driver\timidity\*.c mid2wav\*.c
+link *.obj advapi32.lib bufferoverflowU.lib kernel32.lib user32.lib /nologo /OUT:X64\mid2wav.exe
+del *.obj
 copy installer\install.bat X64
 copy installer\uninstall.bat X64
 cd X64
@@ -55,6 +61,9 @@ del *.obj
 cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 config\*.c common\*.c
 link dialog.obj registry.obj winmain.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /OUT:IA64\timcfg.exe
 link cpl.obj dialog.obj registry.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /dll /def:"config\cpl.def" /OUT:IA64\timcfg.cpl
+del *.obj
+cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 common\*.c driver\timidity\*.c mid2wav\*.c
+link *.obj advapi32.lib bufferoverflowU.lib kernel32.lib user32.lib /nologo /OUT:IA64\mid2wav.exe
 del *.obj
 copy installer\install.bat IA64
 copy installer\uninstall.bat IA64
