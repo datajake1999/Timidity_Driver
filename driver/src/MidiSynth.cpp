@@ -357,15 +357,15 @@ unsigned int MidiSynth::MillisToFrames(unsigned int millis) {
 }
 
 void MidiSynth::LoadSettings() {
+	if (cfg.nSampleRate > MAX_OUTPUT_RATE)
+	{
+		cfg.nSampleRate = MAX_OUTPUT_RATE;
+	}
+	else if (cfg.nSampleRate < MIN_OUTPUT_RATE)
+	{
+		cfg.nSampleRate = MIN_OUTPUT_RATE;
+	}
 	sampleRate = cfg.nSampleRate;
-	if (sampleRate > MAX_OUTPUT_RATE)
-	{
-		sampleRate = MAX_OUTPUT_RATE;
-	}
-	else if (sampleRate < MIN_OUTPUT_RATE)
-	{
-		sampleRate = MIN_OUTPUT_RATE;
-	}
 	if (cfg.fMono)
 	{
 		numChannels = 1;
