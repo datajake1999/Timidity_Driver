@@ -48,17 +48,20 @@ int WavFileOpen(WavWriter *wr, const char *filename, int rate, int bits, int cha
 	wr->head.bit_depth = bits;
 	strncpy(wr->head.data_header,"data",4);
 	wr->head.data_bytes = 0;
-	fwrite(&wr->head, sizeof(wr->head), 1, wr->out);
+	if (!fwrite(&wr->head, sizeof(wr->head), 1, wr->out))
+	{
+		return 0;
+	}
 	return 1;
 }
 
-void WavFileWrite(WavWriter *wr, void *buffer, int length)
+int WavFileWrite(WavWriter *wr, void *buffer, int length)
 {
 	if (!wr || !wr->out || !buffer)
 	{
-		return;
+		return 0;
 	}
-	fwrite(buffer, wr->head.sample_alignment, length, wr->out);
+	return fwrite(buffer, wr->head.sample_alignment, length, wr->out);
 }
 
 void WavFileSetLoop(WavWriter *wr, int start, int end)
@@ -98,7 +101,7 @@ void WavFileClose(WavWriter *wr)
 	if (wr->LoopSet)
 	{
 		fwrite(&wr->loop, sizeof(wr->loop), 1, wr->out);
-		wr->head.wav_size += sizeof(smpl);
+		wr->head.wav_size += sizeof(wr->loop);
 	}
 	fseek(wr->out, 0, SEEK_SET);
 	fwrite(&wr->head, sizeof(wr->head), 1, wr->out);

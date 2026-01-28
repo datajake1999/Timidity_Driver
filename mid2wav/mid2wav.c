@@ -15,13 +15,14 @@ int main(int argc, char *argv[])
 	DriverConfig *cfg = NULL;
 	char text[256];
 	char szAnsi[MAX_PATH];
-	int channels, bit_depth, audio_format, i;
+	int channels, bit_depth, audio_format, i, return_value;
 	clock_t begin, end;
 	double time_spent, realtime_rate;
 	if (argc < 3)
 	{
 		printf("Usage: %s [input].mid [output].wav.\n", argv[0]);
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	memset(text, 0, sizeof(text));
 	memset(szAnsi, 0, sizeof(szAnsi));
@@ -29,7 +30,8 @@ int main(int argc, char *argv[])
 	if (!cfg)
 	{
 		printf("Error allocating settings structure.\n");
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	memset(cfg, 0, sizeof(DriverConfig));
 	cfg->nSampleRate = DEFAULT_RATE;
@@ -77,7 +79,8 @@ int main(int argc, char *argv[])
 	if (!synth)
 	{
 		printf("Error allocating synth.\n");
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	memset(synth, 0, sizeof(Timid));
 	timid_init(synth);
@@ -123,30 +126,35 @@ int main(int argc, char *argv[])
 	if (!timid_load_config(synth, szAnsi))
 	{
 		printf("Failed to load Timidity configuration file at %s.\n", szAnsi);
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	if (!timid_load_smf(synth, argv[1]))
 	{
 		printf("Failed to play %s.\n", argv[1]);
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	wr = (WavWriter *)malloc(sizeof(WavWriter));
 	if (!wr)
 	{
 		printf("Error allocating WAV writer.\n");
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	memset(wr, 0, sizeof(WavWriter));
 	if (!WavFileOpen(wr, argv[2], cfg->nSampleRate, bit_depth, channels, 1))
 	{
 		printf("Failed to open %s.\n", argv[2]);
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	buffer = (uint8 *)malloc(AUDIO_BUFFER_SIZE * channels * (bit_depth / 8));
 	if (!buffer)
 	{
 		printf("Error allocating buffer.\n");
-		return 0;
+		return_value = 1;
+		goto cleanup;
 	}
 	memset(buffer, 0, AUDIO_BUFFER_SIZE * channels * (bit_depth / 8));
 	if (timid_get_smf_name(synth, text, sizeof(text)))
@@ -167,14 +175,15 @@ int main(int argc, char *argv[])
 	begin = clock();
 	while (timid_play_smf(synth, audio_format, buffer, AUDIO_BUFFER_SIZE))
 	{
-		WavFileWrite(wr, buffer, AUDIO_BUFFER_SIZE);
+		if (!WavFileWrite(wr, buffer, AUDIO_BUFFER_SIZE))
+		{
+			printf("Error writing data to %s.\n", argv[2]);
+			return_value = 1;
+			goto cleanup;
+		}
 	}
 	end = clock();
-	free(buffer);
-	buffer = NULL;
 	WavFileClose(wr);
-	free(wr);
-	wr = NULL;
 	time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 	realtime_rate = ((double)timid_get_current_time(synth) / 1000.0) / time_spent;
 	printf("Playback finished.\n");
@@ -183,10 +192,28 @@ int main(int argc, char *argv[])
 	printf("Lost notes: %d.\n", timid_get_lost_notes(synth));
 	printf("Cut notes: %d.\n", timid_get_cut_notes(synth));
 	printf("Conversion time: %f seconds (%f realtime).\n", time_spent, realtime_rate);
-	timid_close(synth);
-	free(synth);
-	synth = NULL;
-	free(cfg);
-	cfg = NULL;
-	return 0;
+	return_value = 0;
+cleanup:
+	if (buffer)
+	{
+		free(buffer);
+		buffer = NULL;
+	}
+	if (wr)
+	{
+		free(wr);
+		wr = NULL;
+	}
+	if (synth)
+	{
+		timid_close(synth);
+		free(synth);
+		synth = NULL;
+	}
+	if (cfg)
+	{
+		free(cfg);
+		cfg = NULL;
+	}
+	return return_value;
 }

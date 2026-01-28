@@ -34,11 +34,11 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
-	int WavFileOpen(WavWriter *wr, const char *filename, int rate, int bits, int channels, int format);
-	void WavFileWrite(WavWriter *wr, void *buffer, int length);
-	void WavFileSetLoop(WavWriter *wr, int start, int end);
-	void WavFileClearLoop(WavWriter *wr);
-	void WavFileClose(WavWriter *wr);
+int WavFileOpen(WavWriter *wr, const char *filename, int rate, int bits, int channels, int format);
+int WavFileWrite(WavWriter *wr, void *buffer, int length);
+void WavFileSetLoop(WavWriter *wr, int start, int end);
+void WavFileClearLoop(WavWriter *wr);
+void WavFileClose(WavWriter *wr);
 #ifdef __cplusplus
 }
 #endif
