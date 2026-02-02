@@ -9,7 +9,7 @@ cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 installer\drvinst.c
 link *.obj advapi32.lib bufferoverflowU.lib kernel32.lib user32.lib /nologo /OUT:X86\drvsetup.exe
 del *.obj
 cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 test\test.c
-link *.obj bufferoverflowU.lib kernel32.lib user32.lib winmm.lib /nologo /OUT:X86\test.exe
+link *.obj bufferoverflowU.lib kernel32.lib user32.lib winmm.lib /nologo /OUT:X86\drvtest.exe
 del *.obj
 rc config\Timidity.rc
 cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 config\*.c common\*.c
@@ -33,7 +33,7 @@ cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 installer\drvinst.c
 link *.obj advapi32.lib bufferoverflowU.lib kernel32.lib user32.lib /nologo /OUT:X64\drvsetup.exe
 del *.obj
 cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 test\test.c
-link *.obj bufferoverflowU.lib kernel32.lib user32.lib winmm.lib /nologo /OUT:X64\test.exe
+link *.obj bufferoverflowU.lib kernel32.lib user32.lib winmm.lib /nologo /OUT:X64\drvtest.exe
 del *.obj
 cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 config\*.c common\*.c
 link dialog.obj registry.obj winmain.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /OUT:X64\timcfg.exe
@@ -56,7 +56,7 @@ cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 installer\drvinst.c
 link *.obj advapi32.lib bufferoverflowU.lib kernel32.lib user32.lib /nologo /OUT:IA64\drvsetup.exe
 del *.obj
 cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 test\test.c
-link *.obj bufferoverflowU.lib kernel32.lib user32.lib winmm.lib /nologo /OUT:IA64\test.exe
+link *.obj bufferoverflowU.lib kernel32.lib user32.lib winmm.lib /nologo /OUT:IA64\drvtest.exe
 del *.obj
 cl /nologo -c /D "UNICODE" /D "_UNICODE" /O2 config\*.c common\*.c
 link dialog.obj registry.obj winmain.obj config\Timidity.res advapi32.lib bufferoverflowU.lib comctl32.lib comdlg32.lib kernel32.lib user32.lib /nologo /OUT:IA64\timcfg.exe
