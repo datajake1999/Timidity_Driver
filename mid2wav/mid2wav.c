@@ -183,7 +183,6 @@ int main(int argc, char *argv[])
 		}
 	}
 	end = clock();
-	WavFileClose(wr);
 	time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 	realtime_rate = ((double)timid_get_current_time(synth) / 1000.0) / time_spent;
 	printf("Playback finished.\n");
@@ -201,6 +200,7 @@ cleanup:
 	}
 	if (wr)
 	{
+		WavFileClose(wr);
 		free(wr);
 		wr = NULL;
 	}

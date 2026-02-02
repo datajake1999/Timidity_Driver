@@ -35,10 +35,10 @@ int WavFileOpen(WavWriter *wr, const char *filename, int rate, int bits, int cha
 		}
 	}
 	memset(&wr->head, 0, sizeof(wr->head));
-	strncpy(wr->head.riff_header,"RIFF",4);
+	strncpy(wr->head.riff_header, "RIFF", 4);
 	wr->head.wav_size = sizeof(wr->head)-8;
-	strncpy(wr->head.wave_header,"WAVE",4);
-	strncpy(wr->head.fmt_header,"fmt ",4);
+	strncpy(wr->head.wave_header, "WAVE", 4);
+	strncpy(wr->head.fmt_header, "fmt ", 4);
 	wr->head.fmt_chunk_size = 16;
 	wr->head.audio_format = format;
 	wr->head.num_channels = channels;
@@ -46,10 +46,13 @@ int WavFileOpen(WavWriter *wr, const char *filename, int rate, int bits, int cha
 	wr->head.byte_rate = bits / 8 * channels * rate;
 	wr->head.sample_alignment = bits / 8 * channels;
 	wr->head.bit_depth = bits;
-	strncpy(wr->head.data_header,"data",4);
+	strncpy(wr->head.data_header, "data", 4);
 	wr->head.data_bytes = 0;
 	if (!fwrite(&wr->head, sizeof(wr->head), 1, wr->out))
 	{
+		fclose(wr->out);
+		wr->out = NULL;
+		memset(&wr->head, 0, sizeof(wr->head));
 		return 0;
 	}
 	return 1;
@@ -70,7 +73,7 @@ void WavFileSetLoop(WavWriter *wr, int start, int end)
 	{
 		return;
 	}
-	strncpy(wr->loop.ChunkID,"smpl",4);
+	strncpy(wr->loop.ChunkID, "smpl", 4);
 	wr->loop.size = sizeof(wr->loop)-8;
 	wr->loop.NumSampleLoops = 1;
 	wr->loop.LoopStart = start;
