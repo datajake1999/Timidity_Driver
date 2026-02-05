@@ -263,6 +263,7 @@ typedef struct {
   int32 at;
   /* These would both fit into 32 bits, but they are often added in
   large multiples, so it's simpler to have two roomy ints */
+  /* samples per MIDI delta-t */
   int32 sample_increment;
   int32 sample_correction;
   sample_t resample_buffer[AUDIO_BUFFER_SIZE];
@@ -459,8 +460,8 @@ int timid_get_song_title(Timid *tm, char *buffer, int32 count);
 int timid_get_song_copyright(Timid *tm, char *buffer, int32 count);
 
 /* Utility functions */
-int timid_millis2samples(Timid *tm, int millis);
-int timid_samples2millis(Timid *tm, int samples);
+int timid_millis2samples(Timid *tm, int32 millis);
+int timid_samples2millis(Timid *tm, int32 samples);
 
 /* Close an instance of Timidity. This should be called after all other API function calls */
 void timid_close(Timid *tm);
