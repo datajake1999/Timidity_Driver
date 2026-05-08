@@ -1,10 +1,10 @@
-#include <stdio.h>
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
 #include <tchar.h>
-#include "resource.h"
+
 #include "dialog.h"
+#include "resource.h"
 #include "../common/registry.h"
 #include "../driver/timidity/config.h"
 
@@ -14,6 +14,58 @@ static DriverConfig cfg;
 static UINT WINAPI HookProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	return 0;
+}
+
+static BOOL SetConfigFile(HWND hWnd)
+{
+	if (hWnd)
+	{
+		OPENFILENAME ofn;
+		_TCHAR filter[MAX_PATH];
+		_TCHAR filename[MAX_PATH];
+		_TCHAR title[MAX_PATH];
+		_TCHAR directory[MAX_PATH];
+		_TCHAR caption[MAX_PATH];
+		_TCHAR *separator;
+		ZeroMemory(&ofn, sizeof(ofn));
+		ZeroMemory(filter, sizeof(filter));
+		ZeroMemory(filename, sizeof(filename));
+		ZeroMemory(title, sizeof(title));
+		ZeroMemory(directory, sizeof(directory));
+		ZeroMemory(caption, sizeof(caption));
+		LoadString(hInst, IDS_CFGFLT, filter, MAX_PATH);
+		LoadString(hInst, IDS_CFGCAP, caption, MAX_PATH);
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = hWnd;
+		ofn.hInstance = hInst;
+		ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 1;
+		ofn.lpstrDefExt = _T("CFG");
+		ofn.lpstrFile = filename;
+		ofn.nMaxFile = MAX_PATH;
+		ofn.lpstrFileTitle = title;
+		ofn.nMaxFileTitle = MAX_PATH;
+		ofn.lpstrInitialDir = directory;
+		ofn.lpstrTitle = caption;
+		ofn.Flags = OFN_ENABLEHOOK | OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
+#ifdef OFN_ENABLESIZING
+		ofn.Flags |= OFN_ENABLESIZING;
+#endif
+#ifdef OFN_DONTADDTORECENT
+		ofn.Flags |= OFN_DONTADDTORECENT;
+#endif
+		ofn.lpfnHook = (LPOFNHOOKPROC)HookProc;
+		_tcscpy(directory, cfg.szConfigFile);
+		separator = _tcsrchr(directory, _T('\\'));
+		if (separator) *separator = _T('\0');
+		GetDlgItemText(hWnd, IDC_CFG, filename, MAX_PATH);
+		if (GetOpenFileName(&ofn))
+		{
+			SetDlgItemText(hWnd, IDC_CFG, filename);
+		}
+		return TRUE;
+	}
+	return FALSE;
 }
 
 static BOOL AboutBox(HWND hWnd)
@@ -106,16 +158,6 @@ static BOOL WINAPI QuietDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 
 static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	OPENFILENAME ofn;
-	_TCHAR filter[MAX_PATH];
-	_TCHAR filename[MAX_PATH];
-	_TCHAR title[MAX_PATH];
-	_TCHAR caption[MAX_PATH];
-	ZeroMemory(&ofn, sizeof(ofn));
-	ZeroMemory(filter, sizeof(filter));
-	ZeroMemory(filename, sizeof(filename));
-	ZeroMemory(title, sizeof(title));
-	ZeroMemory(caption, sizeof(caption));
 	switch (message)
 	{
 	case WM_INITDIALOG:
@@ -178,33 +220,7 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		switch (LOWORD(wParam))
 		{
 		case IDC_CFGB:
-			LoadString(hInst, IDS_CFGFLT, filter, MAX_PATH);
-			LoadString(hInst, IDS_CFGCAP, caption, MAX_PATH);
-			ofn.lStructSize = sizeof(ofn);
-			ofn.hwndOwner = hWnd;
-			ofn.hInstance = hInst;
-			ofn.lpstrFilter = filter;
-			ofn.nFilterIndex = 1;
-			ofn.lpstrDefExt = _T("CFG");
-			ofn.lpstrFile = filename;
-			ofn.nMaxFile = MAX_PATH;
-			ofn.lpstrFileTitle = title;
-			ofn.nMaxFileTitle = MAX_PATH;
-			ofn.lpstrTitle = caption;
-			ofn.Flags = OFN_ENABLEHOOK | OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
-#ifdef OFN_ENABLESIZING
-			ofn.Flags |= OFN_ENABLESIZING;
-#endif
-#ifdef OFN_DONTADDTORECENT
-			ofn.Flags |= OFN_DONTADDTORECENT;
-#endif
-			ofn.lpfnHook = (LPOFNHOOKPROC)HookProc;
-			GetDlgItemText(hWnd, IDC_CFG, filename, MAX_PATH);
-			if (GetOpenFileName(&ofn))
-			{
-				SetDlgItemText(hWnd, IDC_CFG, filename);
-			}
-			return TRUE;
+			return SetConfigFile(hWnd);
 		case IDC_SAMPRATE:
 			switch (HIWORD(wParam))
 			{
