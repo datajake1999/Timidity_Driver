@@ -23,7 +23,7 @@
 void ReadRegistry(DriverConfig *cfg)
 {
 	HKEY hKey;
-	DWORD dwType, dwSize, dwValue;
+	DWORD dwType, dwSize;
 
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, REG_KEY_TIMDRV, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
 		return;
@@ -53,7 +53,7 @@ void ReadRegistry(DriverConfig *cfg)
 void WriteRegistry(DriverConfig *cfg)
 {
 	HKEY hKey;
-	DWORD dwDispos, dwValue;
+	DWORD dwDispos;
 
 	if (RegCreateKeyEx(HKEY_CURRENT_USER, REG_KEY_TIMDRV, 
 			0, NULL, 0, KEY_WRITE, NULL, &hKey, &dwDispos) != ERROR_SUCCESS)
