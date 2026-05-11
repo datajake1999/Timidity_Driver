@@ -2,12 +2,29 @@
 #include <tchar.h>
 #include "registry.h"
 
+#define REG_KEY_TIMDRV			_T("Software\\Datajake\\TimidityDriver")
+#define REG_NAME_CONFIGFILE		_T("ConfigFile")
+#define REG_NAME_SAMPLERATE		_T("SampleRate")
+#define REG_NAME_CTRLRATE		_T("ControlRate")
+#define REG_NAME_VOICES			_T("Voices")
+#define REG_NAME_AMP			_T("Amp")
+#define REG_NAME_ADJUSTPAN		_T("AdjustPanning")
+#define REG_NAME_MONO			_T("Mono")
+#define REG_NAME_8BIT			_T("8Bit")
+#define REG_NAME_ANTIALIAS		_T("Antialiasing")
+#define REG_NAME_PRERESAMPLE		_T("PreResample")
+#define REG_NAME_FASTDEC		_T("FastDecay")
+#define REG_NAME_DYNALOAD		_T("DynamicLoad")
+#define REG_NAME_DEFPROG		_T("DefaultProgram")
+#define REG_NAME_DRUMCHANNELS		_T("DrumChannels")
+#define REG_NAME_QUIETCHANNELS		_T("QuietChannels")
+
 void ReadRegistry(DriverConfig *cfg)
 {
 	HKEY hKey;
 	DWORD dwType, dwSize, dwValue;
 
-	if (RegOpenKeyEx(HKEY_CURRENT_USER, REG_KEY, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, REG_KEY_TIMDRV, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
 		return;
 
 	dwSize = sizeof(int);
@@ -37,7 +54,7 @@ void WriteRegistry(DriverConfig *cfg)
 	HKEY hKey;
 	DWORD dwDispos, dwValue;
 
-	if (RegCreateKeyEx(HKEY_CURRENT_USER, REG_KEY, 
+	if (RegCreateKeyEx(HKEY_CURRENT_USER, REG_KEY_TIMDRV, 
 			0, NULL, 0, KEY_WRITE, NULL, &hKey, &dwDispos) != ERROR_SUCCESS)
 		return;
 
