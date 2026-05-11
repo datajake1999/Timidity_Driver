@@ -22,12 +22,12 @@ static BOOL SetConfigFile(HWND hWnd)
 	if (hWnd)
 	{
 		OPENFILENAME ofn;
-		_TCHAR filter[MAX_PATH];
-		_TCHAR filename[MAX_PATH];
-		_TCHAR title[MAX_PATH];
-		_TCHAR directory[MAX_PATH];
-		_TCHAR caption[MAX_PATH];
-		_TCHAR *separator;
+		TCHAR filter[MAX_PATH];
+		TCHAR filename[MAX_PATH];
+		TCHAR title[MAX_PATH];
+		TCHAR directory[MAX_PATH];
+		TCHAR caption[MAX_PATH];
+		TCHAR *separator;
 		ZeroMemory(&ofn, sizeof(ofn));
 		ZeroMemory(filter, sizeof(filter));
 		ZeroMemory(filename, sizeof(filename));
@@ -73,8 +73,8 @@ static BOOL AboutBox(HWND hWnd)
 {
 	if (hWnd)
 	{
-		_TCHAR caption[MAX_PATH];
-		_TCHAR text[MAX_PATH*2];
+		TCHAR caption[MAX_PATH];
+		TCHAR text[MAX_PATH*2];
 		ZeroMemory(caption, sizeof(caption));
 		ZeroMemory(text, sizeof(text));
 		LoadString(hInst, IDS_ABOUTCAP, caption, MAX_PATH);
@@ -87,7 +87,7 @@ static BOOL AboutBox(HWND hWnd)
 
 static BOOL WINAPI DrumDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int i;
+	UINT i;
 	switch (message)
 	{
 	case WM_INITDIALOG:
@@ -123,7 +123,7 @@ static BOOL WINAPI DrumDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 
 static BOOL WINAPI QuietDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int i;
+	UINT i;
 	switch (message)
 	{
 	case WM_INITDIALOG:
