@@ -395,8 +395,6 @@ void MidiSynth::LoadSettings() {
 }
 
 int MidiSynth::Init() {
-	char szAnsi[MAX_PATH];
-	memset(szAnsi, 0, sizeof(szAnsi));
 	memset(&cfg, 0, sizeof(cfg));
 	cfg.nSampleRate = DEFAULT_RATE;
 	cfg.nControlRate = CONTROLS_PER_SECOND;
@@ -452,15 +450,25 @@ int MidiSynth::Init() {
 			timid_set_quiet_channel(&synth, i, 0);
 		}
 	}
+	char szAnsi[MAX_PATH];
+	memset(szAnsi, 0, sizeof(szAnsi));
+#ifdef _UNICODE
+	WideCharToMultiByte(CP_ACP, 0, cfg.szDefaultInstrument, -1, szAnsi, MAX_PATH, NULL, NULL);
+#else
+	strcpy(szAnsi, cfg.szDefaultInstrument);
+#endif
+	int DefaultInstrumentLoaded = timid_set_default_instrument(&synth, szAnsi);
+	memset(szAnsi, 0, sizeof(szAnsi));
 #ifdef _UNICODE
 	WideCharToMultiByte(CP_ACP, 0, cfg.szConfigFile, -1, szAnsi, MAX_PATH, NULL, NULL);
 #else
 	strcpy(szAnsi, cfg.szConfigFile);
 #endif
-	if (!timid_load_config(&synth, szAnsi)) {
+	if (!DefaultInstrumentLoaded && !timid_load_config(&synth, szAnsi)) {
 		MessageBoxW(NULL, L"Can't open Synth", L"Timidity", MB_OK | MB_ICONEXCLAMATION);
 		return 1;
 	}
+	timid_reset(&synth);
 
 	UINT wResult = s_waveOut.Init(buffer, bufferSize, chunkSize, useRingBuffer, sampleRate, numChannels, bitDepth);
 	if (wResult) return wResult;

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	DriverConfig *cfg = NULL;
 	char text[256];
 	char szAnsi[MAX_PATH];
-	int channels, bit_depth, audio_format, i, return_value;
+	int channels, bit_depth, audio_format, i, default_instrument_loaded, return_value;
 	clock_t begin, end;
 	double time_spent, realtime_rate;
 	if (argc < 3)
@@ -116,6 +116,13 @@ int main(int argc, char *argv[])
 		}
 	}
 #ifdef _UNICODE
+	WideCharToMultiByte(CP_ACP, 0, cfg->szDefaultInstrument, -1, szAnsi, MAX_PATH, NULL, NULL);
+#else
+	strcpy(szAnsi, cfg->szDefaultInstrument);
+#endif
+	default_instrument_loaded = timid_set_default_instrument(synth, szAnsi);
+	memset(szAnsi, 0, sizeof(szAnsi));
+#ifdef _UNICODE
 	WideCharToMultiByte(CP_ACP, 0, cfg->szConfigFile, -1, szAnsi, MAX_PATH, NULL, NULL);
 #else
 	strcpy(szAnsi, cfg->szConfigFile);
@@ -124,7 +131,7 @@ int main(int argc, char *argv[])
 	{
 		strcpy(szAnsi, CONFIG_FILE);
 	}
-	if (!timid_load_config(synth, szAnsi))
+	if (!default_instrument_loaded && !timid_load_config(synth, szAnsi))
 	{
 		printf("Failed to load Timidity configuration file at %s.\n", szAnsi);
 		return_value = 1;

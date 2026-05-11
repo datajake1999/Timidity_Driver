@@ -14,6 +14,7 @@ typedef struct {
 	BOOL fPreResample;
 	BOOL fFastDecay;
 	BOOL fDynamicLoad;
+	TCHAR szDefaultInstrument[MAX_PATH];
 	int nDefaultProgram;
 	int nDrumChannels;
 	int nQuietChannels;

@@ -40,7 +40,7 @@ VS_VERSION_INFO VERSIONINFO
  FILEFLAGS 0x0L
 #endif
  FILEOS 0x40004L
- FILETYPE 0x2L
+ FILETYPE 0x1L
  FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
@@ -168,15 +168,18 @@ BEGIN
     AUTOCHECKBOX    "Pr&eResample",IDC_PRERES,160,150,130,10,WS_TABSTOP
     AUTOCHECKBOX    "&Fast Decay",IDC_FASTDEC,20,180,130,10,WS_TABSTOP
     AUTOCHECKBOX    "&Dynamically Load Instruments",IDC_DYNALOAD,160,180,130,10,WS_TABSTOP
-    LTEXT           "Default Pro&gram:",IDC_STATIC,20,210,90,8
-    EDITTEXT        IDC_DEFPROG,120,210,80,12,WS_TABSTOP|ES_AUTOHSCROLL|ES_NUMBER
-    CONTROL         "Spin1",IDC_DEFPROGS,"msctls_updown32",UDS_SETBUDDYINT|UDS_ALIGNRIGHT|UDS_AUTOBUDDY|UDS_ARROWKEYS,210,210,10,15
-    PUSHBUTTON      "Set Dr&um Channels...",IDC_DRUMCHANNELS,20,240,90,15,WS_TABSTOP
-    PUSHBUTTON      "Set &Quiet Channels...",IDC_QUIETCHANNELS,120,240,90,15,WS_TABSTOP
-    PUSHBUTTON      "&About...",IDC_ABOUT,20,270,90,15,WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,20,300,50,15,WS_TABSTOP
-    PUSHBUTTON      "Cancel",IDCANCEL,90,300,50,15,WS_TABSTOP
-    PUSHBUTTON      "Apply",IDC_APPLY,160,300,50,15,WS_TABSTOP
+    LTEXT           "Default &Instrument:",IDC_STATIC,20,210,90,8
+    EDITTEXT        IDC_DEFINST,120,210,160,12,WS_TABSTOP|ES_AUTOHSCROLL
+    PUSHBUTTON      "B&rowse...",IDC_DEFINSTB,290,210,90,15,WS_TABSTOP
+    LTEXT           "Default Pro&gram:",IDC_STATIC,20,240,90,8
+    EDITTEXT        IDC_DEFPROG,120,240,80,12,WS_TABSTOP|ES_AUTOHSCROLL|ES_NUMBER
+    CONTROL         "Spin1",IDC_DEFPROGS,"msctls_updown32",UDS_SETBUDDYINT|UDS_ALIGNRIGHT|UDS_AUTOBUDDY|UDS_ARROWKEYS,210,240,10,15
+    PUSHBUTTON      "Set Dr&um Channels...",IDC_DRUMCHANNELS,20,270,90,15,WS_TABSTOP
+    PUSHBUTTON      "Set &Quiet Channels...",IDC_QUIETCHANNELS,120,270,90,15,WS_TABSTOP
+    PUSHBUTTON      "&About...",IDC_ABOUT,20,300,90,15,WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,20,330,50,15,WS_TABSTOP
+    PUSHBUTTON      "Cancel",IDCANCEL,90,330,50,15,WS_TABSTOP
+    PUSHBUTTON      "Apply",IDC_APPLY,160,330,50,15,WS_TABSTOP
 END
 
 IDD_DRUMDLG DIALOG DISCARDABLE  0, 0, 300, 300
@@ -240,6 +243,8 @@ BEGIN
     IDS_ABOUTTXT            "Copyright (C) 2024-2026 Datajake.\nBased on MIDI Plug-in for GSPlayer by Y.Nagamidori.\nAlso based on Windows OPL3 user mode driver by Nukeykt and Wohlstand.\n\nTimidity credits:\nTimidity 0.2i by Tuukka Toivonen.\nTimidity Win32 by Davide Moretti.\nTimidity Win95 by Nicolas Witczak."
     IDS_CFGFLT              "Timidity Configuration Files(*.CFG)\0*.CFG\0Everything (*.*)\0*.*\0\0"
     IDS_CFGCAP              "Load Timidity Configuration"
+    IDS_INSTFLT             "Gravis Ultrasound Patch Files(*.PAT)\0*.PAT\0Everything (*.*)\0*.*\0\0"
+    IDS_INSTCAP             "Set Default Instrument"
     IDS_CPLNAME             "Timidity Configuration"
     IDS_CPLDESC             "Settings for Timidity Driver"
 END

@@ -16,6 +16,7 @@
 #define REG_NAME_PRERESAMPLE		_T("PreResample")
 #define REG_NAME_FASTDEC		_T("FastDecay")
 #define REG_NAME_DYNALOAD		_T("DynamicLoad")
+#define REG_NAME_DEFINST		_T("DefaultInstrument")
 #define REG_NAME_DEFPROG		_T("DefaultProgram")
 #define REG_NAME_DRUMCHANNELS		_T("DrumChannels")
 #define REG_NAME_QUIETCHANNELS		_T("QuietChannels")
@@ -46,6 +47,8 @@ void ReadRegistry(DriverConfig *cfg)
 
 	dwSize = sizeof(cfg->szConfigFile);
 	RegQueryValueEx(hKey, REG_NAME_CONFIGFILE, 0, &dwType, (LPBYTE)&cfg->szConfigFile, &dwSize);
+	dwSize = sizeof(cfg->szDefaultInstrument);
+	RegQueryValueEx(hKey, REG_NAME_DEFINST, 0, &dwType, (LPBYTE)&cfg->szDefaultInstrument, &dwSize);
 
 	RegCloseKey(hKey);
 }
@@ -75,6 +78,8 @@ void WriteRegistry(DriverConfig *cfg)
 	RegSetValueEx(hKey, REG_NAME_QUIETCHANNELS, 0, REG_DWORD, (LPBYTE)&cfg->nQuietChannels, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_CONFIGFILE, 0, REG_SZ, 
 				(LPBYTE)&cfg->szConfigFile, sizeof(TCHAR) * (_tcslen(cfg->szConfigFile) + 1));
+	RegSetValueEx(hKey, REG_NAME_DEFINST, 0, REG_SZ, 
+				(LPBYTE)&cfg->szDefaultInstrument, sizeof(TCHAR) * (_tcslen(cfg->szDefaultInstrument) + 1));
 
 	RegCloseKey(hKey);
 }

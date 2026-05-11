@@ -69,6 +69,58 @@ static BOOL SetConfigFile(HWND hWnd)
 	return FALSE;
 }
 
+static BOOL SetDefaultInstrument(HWND hWnd)
+{
+	if (hWnd)
+	{
+		OPENFILENAME ofn;
+		TCHAR filter[MAX_PATH];
+		TCHAR filename[MAX_PATH];
+		TCHAR title[MAX_PATH];
+		TCHAR directory[MAX_PATH];
+		TCHAR caption[MAX_PATH];
+		TCHAR *separator;
+		ZeroMemory(&ofn, sizeof(ofn));
+		ZeroMemory(filter, sizeof(filter));
+		ZeroMemory(filename, sizeof(filename));
+		ZeroMemory(title, sizeof(title));
+		ZeroMemory(directory, sizeof(directory));
+		ZeroMemory(caption, sizeof(caption));
+		LoadString(hInst, IDS_INSTFLT, filter, MAX_PATH);
+		LoadString(hInst, IDS_INSTCAP, caption, MAX_PATH);
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = hWnd;
+		ofn.hInstance = hInst;
+		ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 1;
+		ofn.lpstrDefExt = _T("PAT");
+		ofn.lpstrFile = filename;
+		ofn.nMaxFile = MAX_PATH;
+		ofn.lpstrFileTitle = title;
+		ofn.nMaxFileTitle = MAX_PATH;
+		ofn.lpstrInitialDir = directory;
+		ofn.lpstrTitle = caption;
+		ofn.Flags = OFN_ENABLEHOOK | OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
+#ifdef OFN_ENABLESIZING
+		ofn.Flags |= OFN_ENABLESIZING;
+#endif
+#ifdef OFN_DONTADDTORECENT
+		ofn.Flags |= OFN_DONTADDTORECENT;
+#endif
+		ofn.lpfnHook = (LPOFNHOOKPROC)HookProc;
+		_tcscpy(directory, cfg.szDefaultInstrument);
+		separator = _tcsrchr(directory, _T('\\'));
+		if (separator) *separator = _T('\0');
+		GetDlgItemText(hWnd, IDC_DEFINST, filename, MAX_PATH);
+		if (GetOpenFileName(&ofn))
+		{
+			SetDlgItemText(hWnd, IDC_DEFINST, filename);
+		}
+		return TRUE;
+	}
+	return FALSE;
+}
+
 static BOOL AboutBox(HWND hWnd)
 {
 	if (hWnd)
@@ -215,6 +267,7 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		{
 			CheckDlgButton(hWnd, IDC_DYNALOAD, BST_CHECKED);
 		}
+		SetDlgItemText(hWnd, IDC_DEFINST, cfg.szDefaultInstrument);
 		SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_SETPOS32, 0, cfg.nDefaultProgram);
 		return TRUE;
 	case WM_COMMAND:
@@ -247,6 +300,8 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			default:
 				return FALSE;
 			}
+		case IDC_DEFINSTB:
+			return SetDefaultInstrument(hWnd);
 		case IDC_DRUMCHANNELS:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_DRUMDLG), hWnd, (DLGPROC)DrumDialogProc);
 			return TRUE;
@@ -350,6 +405,7 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			{
 				cfg.fDynamicLoad = FALSE;
 			}
+			GetDlgItemText(hWnd, IDC_DEFINST, cfg.szDefaultInstrument, MAX_PATH);
 			cfg.nDefaultProgram = SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_GETPOS32, 0, 0);
 			if (cfg.nDefaultProgram > 127)
 			{
