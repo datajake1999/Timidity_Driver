@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "../common/registry.h"
 #include "../driver/timidity/timid.h"
