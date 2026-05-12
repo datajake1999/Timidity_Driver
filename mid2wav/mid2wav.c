@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	DriverConfig *cfg = NULL;
 	char text[256];
 	char szAnsi[MAX_PATH];
-	int channels, bit_depth, audio_format, i, default_instrument_loaded, return_value;
+	int channels, bit_depth, audio_format, i, default_instrument_loaded, config_loaded, return_value;
 	clock_t begin, end;
 	double time_spent, realtime_rate;
 	if (argc < 3)
@@ -131,7 +131,8 @@ int main(int argc, char *argv[])
 	{
 		strcpy(szAnsi, CONFIG_FILE);
 	}
-	if (!default_instrument_loaded && !timid_load_config(synth, szAnsi))
+	config_loaded = timid_load_config(synth, szAnsi);
+	if (!default_instrument_loaded && !config_loaded)
 	{
 		printf("Failed to load Timidity configuration file at %s.\n", szAnsi);
 		return_value = 1;

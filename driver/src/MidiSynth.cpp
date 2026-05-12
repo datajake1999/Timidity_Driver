@@ -464,7 +464,8 @@ int MidiSynth::Init() {
 #else
 	strcpy(szAnsi, cfg.szConfigFile);
 #endif
-	if (!DefaultInstrumentLoaded && !timid_load_config(&synth, szAnsi)) {
+	int ConfigLoaded = timid_load_config(&synth, szAnsi);
+	if (!DefaultInstrumentLoaded && !ConfigLoaded) {
 		MessageBoxW(NULL, L"Can't open Synth", L"Timidity", MB_OK | MB_ICONEXCLAMATION);
 		return 1;
 	}
