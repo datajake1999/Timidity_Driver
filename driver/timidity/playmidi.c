@@ -1142,137 +1142,95 @@ void timid_channel_control_change(Timid *tm, uint8 channel, uint8 controller, ui
         return;
     }
     channel = channel & 0x0f;
-    timid_write_midi(tm, 0xb0+channel, controller & 0x7f, value & 0x7f);
+    controller = controller & 0x7f;
+    value = value & 0x7f;
+    switch(controller)
+    {
+    case 0x00:
+        timid_channel_set_bank(tm, channel, value);
+        break;
+    case 0x06:
+        switch((tm->rpn_msb[channel]<<8) | tm->rpn_lsb[channel])
+        {
+        case 0x0000:
+            timid_channel_set_pitch_range(tm, channel, value);
+            break;
+        case 0x7f7f:
+            timid_channel_set_pitch_range(tm, channel, 2);
+            tm->rpn_msb[channel] = 0xff;
+            tm->rpn_lsb[channel] = 0xff;
+            break;
+        }
+        break;
+    case 0x07:
+        timid_channel_set_volume(tm, channel, value);
+        break;
+    case 0x0a:
+        timid_channel_set_pan(tm, channel, value);
+        break;
+    case 0x0b:
+        timid_channel_set_expression(tm, channel, value);
+        break;
+    case 0x40:
+        timid_channel_set_sustain(tm, channel, value);
+        break;
+    case 0x62:
+        tm->rpn_lsb[channel] = 0xff;
+        break;
+    case 0x63:
+        tm->rpn_msb[channel] = 0xff;
+        break;
+    case 0x64:
+        tm->rpn_msb[channel] = value;
+        break;
+    case 0x65:
+        tm->rpn_lsb[channel] = value;
+        break;
+    case 0x78:
+        timid_channel_all_sounds_off(tm, channel);
+        break;
+    case 0x79:
+        timid_channel_reset_controllers(tm, channel);
+        break;
+    case 0x7b:
+        timid_channel_all_notes_off(tm, channel);
+        break;
+    case 0x7e:
+        timid_channel_mono_mode(tm, channel);
+        break;
+    case 0x7f:
+        timid_channel_poly_mode(tm, channel);
+        break;
+    }
 }
 
 void timid_write_midi(Timid *tm, uint8 byte1, uint8 byte2, uint8 byte3)
 {
     uint8 type = byte1 & 0xf0;
     uint8 channel = byte1 & 0x0f;
-    MidiEvent ev;
-    byte2 = byte2 & 0x7f;
-    byte3 = byte3 & 0x7f;
     if (!tm)
     {
         return;
     }
-    memset(&ev, 0, sizeof(ev));
-    ev.channel = channel;
     switch(type)
     {
     case 0x80:
-        ev.type = ME_NOTEOFF;
-        ev.a = byte2;
-        ev.b = byte3;
-        play_midi(tm, &ev);
+        timid_channel_note_off(tm, channel, byte2);
         break;
     case 0x90:
-        ev.type = ME_NOTEON;
-        ev.a = byte2;
-        ev.b = byte3;
-        play_midi(tm, &ev);
+        timid_channel_note_on(tm, channel, byte2, byte3);
         break;
     case 0xa0:
-        ev.type = ME_KEYPRESSURE;
-        ev.a = byte2;
-        ev.b = byte3;
-        play_midi(tm, &ev);
-        break;
-    case 0xc0:
-        ev.type = ME_PROGRAM;
-        ev.a = byte2;
-        ev.b = byte3;
-        play_midi(tm, &ev);
-        break;
-    case 0xe0:
-        ev.type = ME_PITCHWHEEL;
-        ev.a = byte2;
-        ev.b = byte3;
-        play_midi(tm, &ev);
+        timid_channel_key_pressure(tm, channel, byte2, byte3);
         break;
     case 0xb0:
-        switch(byte2)
-        {
-        case 0x00:
-            ev.type = ME_TONE_BANK;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x06:
-            switch((tm->rpn_msb[channel]<<8) | tm->rpn_lsb[channel])
-            {
-            case 0x0000:
-                ev.type = ME_PITCH_SENS;
-                ev.a = byte3;
-                play_midi(tm, &ev);
-                break;
-            case 0x7f7f:
-                ev.type = ME_PITCH_SENS;
-                ev.a = 2;
-                play_midi(tm, &ev);
-                tm->rpn_msb[channel] = 0xff;
-                tm->rpn_lsb[channel] = 0xff;
-                break;
-            }
-            break;
-        case 0x07:
-            ev.type = ME_MAINVOLUME;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x0a:
-            ev.type = ME_PAN;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x0b:
-            ev.type = ME_EXPRESSION;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x40:
-            ev.type = ME_SUSTAIN;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x62:
-            tm->rpn_lsb[channel] = 0xff;
-            break;
-        case 0x63:
-            tm->rpn_msb[channel] = 0xff;
-            break;
-        case 0x64:
-            tm->rpn_msb[channel] = byte3;
-            break;
-        case 0x65:
-            tm->rpn_lsb[channel] = byte3;
-            break;
-        case 0x78:
-            ev.type = ME_ALL_SOUNDS_OFF;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x79:
-            ev.type = ME_RESET_CONTROLLERS;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x7b:
-            ev.type = ME_ALL_NOTES_OFF;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x7e:
-            ev.type = ME_MONO;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        case 0x7f:
-            ev.type = ME_POLY;
-            ev.a = byte3;
-            play_midi(tm, &ev);
-            break;
-        }
+        timid_channel_control_change(tm, channel, byte2, byte3);
+        break;
+    case 0xc0:
+        timid_channel_set_program(tm, channel, byte2);
+        break;
+    case 0xe0:
+        timid_channel_set_pitch_wheel(tm, channel, (uint16)((byte3 << 7) | byte2));
         break;
     }
 }
@@ -1686,6 +1644,32 @@ int timid_load_smf(Timid *tm, char *filename)
     return 1;
 }
 
+void timid_unload_smf(Timid *tm)
+{
+    if (!tm)
+    {
+        return;
+    }
+    reset_midi(tm);
+    if (tm->event_list)
+    {
+        free(tm->event_list);
+        tm->event_list = NULL;
+    }
+    tm->current_event = NULL;
+    if (tm->fp_midi)
+    {
+        close_file(tm->fp_midi);
+        tm->fp_midi = NULL;
+    }
+    tm->events_midi = 0;
+    tm->sample_count = 0;
+    tm->current_sample = 0;
+    memset(tm->song_title, 0, sizeof(tm->song_title));
+    memset(tm->song_copyright, 0, sizeof(tm->song_copyright));
+    memset(tm->last_smf, 0, sizeof(tm->last_smf));
+}
+
 int timid_reload_smf(Timid *tm)
 {
     if (!tm)
@@ -1876,32 +1860,6 @@ int timid_stop_smf(Timid *tm)
         return 0;
     }
     return timid_seek_smf(tm, timid_get_duration(tm));
-}
-
-void timid_unload_smf(Timid *tm)
-{
-    if (!tm)
-    {
-        return;
-    }
-    reset_midi(tm);
-    if (tm->event_list)
-    {
-        free(tm->event_list);
-        tm->event_list = NULL;
-    }
-    tm->current_event = NULL;
-    if (tm->fp_midi)
-    {
-        close_file(tm->fp_midi);
-        tm->fp_midi = NULL;
-    }
-    tm->events_midi = 0;
-    tm->sample_count = 0;
-    tm->current_sample = 0;
-    memset(tm->song_title, 0, sizeof(tm->song_title));
-    memset(tm->song_copyright, 0, sizeof(tm->song_copyright));
-    memset(tm->last_smf, 0, sizeof(tm->last_smf));
 }
 
 void timid_set_amplification(Timid *tm, int amplification)
@@ -2524,6 +2482,15 @@ int timid_get_sample_count(Timid *tm)
     return tm->sample_count;
 }
 
+int timid_get_current_sample_position(Timid *tm)
+{
+    if (!tm)
+    {
+        return 0;
+    }
+    return tm->current_sample;
+}
+
 int timid_get_duration(Timid *tm)
 {
     if (!tm)
@@ -2542,15 +2509,6 @@ int timid_get_current_time(Timid *tm)
     return timid_samples2millis(tm, tm->current_sample);
 }
 
-int timid_get_current_sample_position(Timid *tm)
-{
-    if (!tm)
-    {
-        return 0;
-    }
-    return tm->current_sample;
-}
-
 int timid_get_bitrate(Timid *tm)
 {
     int bitrate;
@@ -2559,7 +2517,7 @@ int timid_get_bitrate(Timid *tm)
         return 0;
     }
     fseek(tm->fp_midi, 0, SEEK_END);
-    bitrate = ftell(tm->fp_midi) * 8 / (timid_get_duration(tm));
+    bitrate = ftell(tm->fp_midi) * 8 / timid_get_duration(tm);
     fseek(tm->fp_midi, 0, SEEK_SET);
     if (!bitrate) bitrate = 1;
     return bitrate;
@@ -2601,7 +2559,7 @@ int timid_millis2samples(Timid *tm, int32 millis)
     {
         return 0;
     }
-    return (int)((millis/1000.0)*tm->play_mode.rate);
+    return (int)((double)tm->play_mode.rate * millis / 1000);
 }
 
 int timid_samples2millis(Timid *tm, int32 samples)
@@ -2610,7 +2568,7 @@ int timid_samples2millis(Timid *tm, int32 samples)
     {
         return 0;
     }
-    return (int)((samples*1000.0)/tm->play_mode.rate);
+    return (int)((double)samples * 1000 / tm->play_mode.rate);
 }
 
 void timid_close(Timid *tm)
