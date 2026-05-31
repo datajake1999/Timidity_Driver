@@ -53,7 +53,7 @@ private:
 	Bit8u *buffer;
 	DWORD framesRendered;
 
-	Timid synth;
+	Timid *synth;
 	DriverConfig cfg;
 
 	unsigned int MillisToFrames(unsigned int millis);

@@ -4,8 +4,9 @@
 #include <time.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include "../common/registry.h"
 #include "../driver/timidity/timid.h"
+#include "../driver/timidity/config.h"
+#include "../common/registry.h"
 #include "wav_writer.h"
 
 int main(int argc, char *argv[])
@@ -76,15 +77,13 @@ int main(int argc, char *argv[])
 		bit_depth = 16;
 		audio_format = AU_SHORT;
 	}
-	synth = (Timid *)malloc(sizeof(Timid));
+	synth = timid_init();
 	if (!synth)
 	{
 		printf("Error allocating synth.\n");
 		return_value = 1;
 		goto cleanup;
 	}
-	memset(synth, 0, sizeof(Timid));
-	timid_init(synth);
 	timid_set_sample_rate(synth, cfg->nSampleRate);
 	timid_set_control_rate(synth, cfg->nControlRate);
 	timid_set_max_voices(synth, cfg->nVoices);
@@ -216,7 +215,6 @@ cleanup:
 	if (synth)
 	{
 		timid_close(synth);
-		free(synth);
 		synth = NULL;
 	}
 	if (cfg)

@@ -16,9 +16,8 @@
 #endif
 #include <mmreg.h>
 #include <process.h>
-#include <stdio.h>
-#include <tchar.h>
 #include "../timidity/timid.h"
+#include "../timidity/config.h"
 #include "../../common/registry.h"
 #include "MidiSynth.h"
 

@@ -321,7 +321,7 @@ void MidiSynth::Render(Bit8u *bufpos, DWORD totalFrames) {
 		while ((timeStamp = midiStream.PeekMessageTime()) == framesRendered) {
 			DWORD msg = midiStream.GetMessage();
 			synthEvent.Wait();
-			timid_write_midi_packed(&synth, msg);
+			timid_write_midi_packed(synth, msg);
 			synthEvent.Release();
 		}
 
@@ -334,11 +334,11 @@ void MidiSynth::Render(Bit8u *bufpos, DWORD totalFrames) {
 		synthEvent.Wait();
 		if (bitDepth == 16)
 		{
-			timid_render_short(&synth, (Bit16s *)bufpos, framesToRender);
+			timid_render_short(synth, (Bit16s *)bufpos, framesToRender);
 		}
 		else if (bitDepth == 8)
 		{
-			timid_render_char(&synth, (Bit8u *)bufpos, framesToRender);
+			timid_render_char(synth, (Bit8u *)bufpos, framesToRender);
 		}
 		synthEvent.Release();
 		framesRendered += framesToRender;
@@ -418,36 +418,35 @@ int MidiSynth::Init() {
 	if (synthEvent.Init()) {
 		return 1;
 	}
-	memset(&synth, 0, sizeof(synth));
-	timid_init(&synth);
-	timid_set_sample_rate(&synth, cfg.nSampleRate);
-	timid_set_control_rate(&synth, cfg.nControlRate);
-	timid_set_max_voices(&synth, cfg.nVoices);
-	timid_set_amplification(&synth, cfg.nAmp);
-	timid_set_immediate_panning(&synth, cfg.fAdjustPanning);
-	timid_set_mono(&synth, cfg.fMono);
-	timid_set_antialiasing(&synth, cfg.fAntialiasing);
-	timid_set_pre_resample(&synth, cfg.fPreResample);
-	timid_set_fast_decay(&synth, cfg.fFastDecay);
-	timid_set_dynamic_instrument_load(&synth, cfg.fDynamicLoad);
-	timid_set_default_program(&synth, cfg.nDefaultProgram);
+	synth = timid_init();
+	timid_set_sample_rate(synth, cfg.nSampleRate);
+	timid_set_control_rate(synth, cfg.nControlRate);
+	timid_set_max_voices(synth, cfg.nVoices);
+	timid_set_amplification(synth, cfg.nAmp);
+	timid_set_immediate_panning(synth, cfg.fAdjustPanning);
+	timid_set_mono(synth, cfg.fMono);
+	timid_set_antialiasing(synth, cfg.fAntialiasing);
+	timid_set_pre_resample(synth, cfg.fPreResample);
+	timid_set_fast_decay(synth, cfg.fFastDecay);
+	timid_set_dynamic_instrument_load(synth, cfg.fDynamicLoad);
+	timid_set_default_program(synth, cfg.nDefaultProgram);
 	for (int i = 0; i < 16; i++)
 	{
 		if (cfg.nDrumChannels & (1<<i))
 		{
-			timid_set_drum_channel(&synth, i, 1);
+			timid_set_drum_channel(synth, i, 1);
 		}
 		else
 		{
-			timid_set_drum_channel(&synth, i, 0);
+			timid_set_drum_channel(synth, i, 0);
 		}
 		if (cfg.nQuietChannels & (1<<i))
 		{
-			timid_set_quiet_channel(&synth, i, 1);
+			timid_set_quiet_channel(synth, i, 1);
 		}
 		else
 		{
-			timid_set_quiet_channel(&synth, i, 0);
+			timid_set_quiet_channel(synth, i, 0);
 		}
 	}
 	char szAnsi[MAX_PATH];
@@ -457,19 +456,19 @@ int MidiSynth::Init() {
 #else
 	strcpy(szAnsi, cfg.szDefaultInstrument);
 #endif
-	int DefaultInstrumentLoaded = timid_set_default_instrument(&synth, szAnsi);
+	int DefaultInstrumentLoaded = timid_set_default_instrument(synth, szAnsi);
 	memset(szAnsi, 0, sizeof(szAnsi));
 #ifdef _UNICODE
 	WideCharToMultiByte(CP_ACP, 0, cfg.szConfigFile, -1, szAnsi, MAX_PATH, NULL, NULL);
 #else
 	strcpy(szAnsi, cfg.szConfigFile);
 #endif
-	int ConfigLoaded = timid_load_config(&synth, szAnsi);
+	int ConfigLoaded = timid_load_config(synth, szAnsi);
 	if (!DefaultInstrumentLoaded && !ConfigLoaded) {
 		MessageBoxW(NULL, L"Can't open Synth", L"Timidity", MB_OK | MB_ICONEXCLAMATION);
 		return 1;
 	}
-	timid_reset(&synth);
+	timid_reset(synth);
 
 	UINT wResult = s_waveOut.Init(buffer, bufferSize, chunkSize, useRingBuffer, sampleRate, numChannels, bitDepth);
 	if (wResult) return wResult;
@@ -477,11 +476,11 @@ int MidiSynth::Init() {
 	// Start playing stream
 	if (bitDepth == 16)
 	{
-		timid_render_short(&synth, (Bit16s *)buffer, bufferSize);
+		timid_render_short(synth, (Bit16s *)buffer, bufferSize);
 	}
 	else if (bitDepth == 8)
 	{
-		timid_render_char(&synth, (Bit8u *)buffer, bufferSize);
+		timid_render_char(synth, (Bit8u *)buffer, bufferSize);
 	}
 	framesRendered = 0;
 
@@ -492,7 +491,7 @@ int MidiSynth::Init() {
 void MidiSynth::ResetSynth()
 {
 	synthEvent.Wait();
-	timid_reset(&synth);
+	timid_reset(synth);
 	midiStream.Clean();
 	synthEvent.Release();
 }
@@ -500,7 +499,7 @@ void MidiSynth::ResetSynth()
 void MidiSynth::PanicSynth()
 {
 	synthEvent.Wait();
-	timid_panic(&synth);
+	timid_panic(synth);
 	synthEvent.Release();
 }
 
@@ -510,7 +509,7 @@ void MidiSynth::PushMIDI(DWORD msg) {
 
 void MidiSynth::PlaySysex(Bit8u *bufpos, DWORD len) {
 	synthEvent.Wait();
-	timid_write_sysex(&synth, bufpos, len);
+	timid_write_sysex(synth, bufpos, len);
 	synthEvent.Release();
 }
 
@@ -518,10 +517,12 @@ void MidiSynth::Close() {
 	s_waveOut.Pause();
 	s_waveOut.Close();
 	synthEvent.Wait();
-	timid_close(&synth);
+	timid_close(synth);
+	synth = NULL;
 
 	// Cleanup memory
-	delete buffer;
+	delete[] buffer;
+	buffer = NULL;
 
 	synthEvent.Close();
 }

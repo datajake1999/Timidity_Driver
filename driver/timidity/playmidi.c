@@ -28,7 +28,7 @@ playmidi.c -- random stuff in need of rearrangement
 #include <string.h>
 #endif
 
-#include "timid.h"
+#include "internal.h"
 
 static void adjust_amplification(Timid *tm, int amplification)
 {
@@ -243,12 +243,12 @@ static void start_note(Timid *tm, MidiEvent *e, int i)
     {
         if (!tm->drumset[tm->channel[e->channel].bank] && !tm->drumset[0])
         return; /* No drumset? Then we can't play. */
-        if (!tm->drumset[tm->channel[e->channel].bank]->tone[e->a].instrument)
+        if (tm->drumset[tm->channel[e->channel].bank]->tone[e->a].name && !tm->drumset[tm->channel[e->channel].bank]->tone[e->a].instrument)
         {
             tm->drumset[tm->channel[e->channel].bank]->tone[e->a].instrument=MAGIC_LOAD_INSTRUMENT;
             load_missing_instruments(tm);
         }
-        if (!tm->drumset[0]->tone[e->a].instrument)
+        if (tm->drumset[0]->tone[e->a].name && !tm->drumset[0]->tone[e->a].instrument)
         {
             tm->drumset[0]->tone[e->a].instrument=MAGIC_LOAD_INSTRUMENT;
             load_missing_instruments(tm);
@@ -273,12 +273,12 @@ static void start_note(Timid *tm, MidiEvent *e, int i)
         return; /* No tonebank? Then we can't play. */
         if (tm->channel[e->channel].program!=SPECIAL_PROGRAM)
         {
-            if (!tm->tonebank[tm->channel[e->channel].bank]->tone[tm->channel[e->channel].program].instrument)
+            if (tm->tonebank[tm->channel[e->channel].bank]->tone[tm->channel[e->channel].program].name && !tm->tonebank[tm->channel[e->channel].bank]->tone[tm->channel[e->channel].program].instrument)
             {
                 tm->tonebank[tm->channel[e->channel].bank]->tone[tm->channel[e->channel].program].instrument=MAGIC_LOAD_INSTRUMENT;
                 load_missing_instruments(tm);
             }
-            if (!tm->tonebank[0]->tone[tm->channel[e->channel].program].instrument)
+            if (tm->tonebank[0]->tone[tm->channel[e->channel].program].name && !tm->tonebank[0]->tone[tm->channel[e->channel].program].instrument)
             {
                 tm->tonebank[0]->tone[tm->channel[e->channel].program].instrument=MAGIC_LOAD_INSTRUMENT;
                 load_missing_instruments(tm);
@@ -802,7 +802,7 @@ static void read_midi_text(Timid *tm)
         case 0x01FF00: //other text
         case 0x04FF00: //Instrument
         case 0x05FF00: //Lyrics
-        case 0x06FF00: //Maker
+        case 0x06FF00: //Marker
         case 0x07FF00: //Cue
         default:
             buff = (buff&0xFF000000) >> 24;
@@ -813,11 +813,12 @@ static void read_midi_text(Timid *tm)
     fseek(tm->fp_midi, 0, SEEK_SET);
 }
 
-void timid_init(Timid *tm)
+Timid *timid_init(void)
 {
+    Timid *tm = (Timid *)safe_malloc(sizeof(Timid));
     if (!tm)
     {
-        return;
+        return NULL;
     }
     memset(tm, 0, sizeof(Timid));
     tm->default_program=DEFAULT_PROGRAM;
@@ -840,6 +841,7 @@ void timid_init(Timid *tm)
     init_tables(tm);
     reset_midi(tm);
     adjust_amplification(tm, DEFAULT_AMPLIFICATION);
+    return tm;
 }
 
 int timid_load_config(Timid *tm, char *filename)
@@ -1690,7 +1692,7 @@ int timid_reload_smf(Timid *tm)
 int timid_play_smf(Timid *tm, int32 type, uint8 *buffer, int32 count)
 {
     int convert;
-    if (!tm || !buffer || !tm->current_event || (tm->current_event->type == ME_EOT && !timid_get_active_voices(tm)))
+    if (!tm || !buffer || (type > AU_ULAW || type < AU_CHAR) || !tm->current_event || (tm->current_event->type == ME_EOT && !timid_get_active_voices(tm)))
     {
         return 0;
     }
@@ -2583,4 +2585,5 @@ void timid_close(Timid *tm)
     free_default_instrument(tm);
     free_tables(tm);
     memset(tm, 0, sizeof(Timid));
+    free(tm);
 }
