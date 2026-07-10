@@ -3,6 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <cpl.h>
+#include <tchar.h>
 
 #include "dialog.h"
 #include "resource.h"
@@ -11,11 +12,7 @@ static HANDLE hModule = NULL;
 
 BOOL WINAPI DllMain(PVOID hmod, ULONG ulReason, PCONTEXT pctx)
 {
-	if(ulReason != DLL_PROCESS_ATTACH)
-	{
-		return TRUE;
-	}
-	else
+	if(ulReason == DLL_PROCESS_ATTACH)
 	{
 		hModule = hmod;
 	}
@@ -47,9 +44,9 @@ LONG APIENTRY CPlApplet(HWND hwndCPL, UINT uMsg, LONG_PTR lParam1, LONG_PTR lPar
 		lpNewCPlInfo->dwHelpContext = 0;
 		lpNewCPlInfo->lData = 0;
 		lpNewCPlInfo->hIcon = LoadIcon(hModule, MAKEINTRESOURCE(IDI_ICON));
-		lpNewCPlInfo->szHelpFile[0] = '\0';
 		LoadString(hModule, IDS_CPLNAME, lpNewCPlInfo->szName, 32);
 		LoadString(hModule, IDS_CPLDESC, lpNewCPlInfo->szInfo, 64);
+		lpNewCPlInfo->szHelpFile[0] = _T('\0');
 		break;
 	case CPL_DBLCLK:
 		ShowConfigDialog(hModule, hwndCPL);
