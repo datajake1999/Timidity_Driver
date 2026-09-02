@@ -142,7 +142,7 @@ END
 // Dialog
 //
 
-IDD_DIALOG DIALOG DISCARDABLE  0, 0, 600, 400
+IDD_DIALOG DIALOG DISCARDABLE  0, 0, 600, 430
 CAPTION "Timidity Driver Configuration"
 STYLE DS_MODALFRAME|DS_SETFONT|DS_SETFOREGROUND|WS_CAPTION|WS_POPUP|WS_SYSMENU
 FONT 8, "MS Shell Dlg"
@@ -176,10 +176,15 @@ BEGIN
     CONTROL         "Spin1",IDC_DEFPROGS,"msctls_updown32",UDS_SETBUDDYINT|UDS_ALIGNRIGHT|UDS_AUTOBUDDY|UDS_ARROWKEYS,210,240,10,15
     PUSHBUTTON      "Set Dr&um Channels...",IDC_DRUMCHANNELS,20,270,90,15,WS_TABSTOP
     PUSHBUTTON      "Set &Quiet Channels...",IDC_QUIETCHANNELS,120,270,90,15,WS_TABSTOP
-    PUSHBUTTON      "&About...",IDC_ABOUT,20,300,90,15,WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,20,330,50,15,WS_TABSTOP
-    PUSHBUTTON      "Cancel",IDCANCEL,90,330,50,15,WS_TABSTOP
-    PUSHBUTTON      "Apply",IDC_APPLY,160,330,50,15,WS_TABSTOP
+    AUTOCHECKBOX    "Enable Reverb",IDC_REVERBENABLED,20,300,130,10,WS_TABSTOP
+    LTEXT           "Reverb &Level:",IDC_STATIC,160,300,90,8
+    CONTROL         "Slider1",IDC_REVERBLEVEL,"msctls_trackbar32",WS_TABSTOP,260,300,100,20
+    LTEXT           "Reverb Preset:",IDC_STATIC,20,330,90,8
+    COMBOBOX        IDC_REVERBPRESET,120,330,70,10,WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST
+    PUSHBUTTON      "&About...",IDC_ABOUT,20,360,90,15,WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,20,390,50,15,WS_TABSTOP
+    PUSHBUTTON      "Cancel",IDCANCEL,90,390,50,15,WS_TABSTOP
+    PUSHBUTTON      "Apply",IDC_APPLY,160,390,50,15,WS_TABSTOP
 END
 
 IDD_DRUMDLG DIALOG DISCARDABLE  0, 0, 300, 300
@@ -240,7 +245,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_ABOUTCAP            "About Timidity Driver"
-    IDS_ABOUTTXT            "Copyright (C) 2024-2026 Datajake.\nBased on MIDI Plug-in for GSPlayer by Y.Nagamidori.\nAlso based on Windows OPL3 user mode driver by Nukeykt and Wohlstand.\n\nTimidity credits:\nTimidity 0.2i by Tuukka Toivonen.\nTimidity Win32 by Davide Moretti.\nTimidity Win95 by Nicolas Witczak."
+    IDS_ABOUTTXT            "Copyright (C) 2024-2026 Datajake.\nBased on MIDI Plug-in for GSPlayer by Y.Nagamidori.\nAlso based on Windows OPL3 user mode driver by Nukeykt and Wohlstand.\n\nTimidity credits:\nTimidity 0.2i by Tuukka Toivonen.\nTimidity Win32 by Davide Moretti.\nTimidity Win95 by Nicolas Witczak.\n\nReverb engine derived from the OpenALSoft EAXReverb implementation."
     IDS_CFGFLT              "Timidity Configuration Files(*.CFG)\0*.CFG\0Everything (*.*)\0*.*\0\0"
     IDS_CFGCAP              "Load Timidity Configuration"
     IDS_INSTFLT             "Gravis Ultrasound Patch Files(*.PAT)\0*.PAT\0Everything (*.*)\0*.*\0\0"

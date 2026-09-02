@@ -20,6 +20,9 @@
 #define REG_NAME_DEFPROG		_T("DefaultProgram")
 #define REG_NAME_DRUMCHANNELS		_T("DrumChannels")
 #define REG_NAME_QUIETCHANNELS		_T("QuietChannels")
+#define REG_NAME_REVERBENABLED		_T("ReverbEnabled")
+#define REG_NAME_REVERBLEVEL		_T("ReverbLevel")
+#define REG_NAME_REVERBPRESET		_T("ReverbPreset")
 
 void ReadRegistry(DriverConfig *cfg)
 {
@@ -44,6 +47,9 @@ void ReadRegistry(DriverConfig *cfg)
 	RegQueryValueEx(hKey, REG_NAME_DEFPROG, 0, &dwType, (LPBYTE)&cfg->nDefaultProgram, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_DRUMCHANNELS, 0, &dwType, (LPBYTE)&cfg->nDrumChannels, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_QUIETCHANNELS, 0, &dwType, (LPBYTE)&cfg->nQuietChannels, &dwSize);
+	RegQueryValueEx(hKey, REG_NAME_REVERBENABLED, 0, &dwType, (LPBYTE)&cfg->fReverbEnabled, &dwSize);
+	RegQueryValueEx(hKey, REG_NAME_REVERBLEVEL, 0, &dwType, (LPBYTE)&cfg->nReverbLevel, &dwSize);
+	RegQueryValueEx(hKey, REG_NAME_REVERBPRESET, 0, &dwType, (LPBYTE)&cfg->nReverbPreset, &dwSize);
 
 	dwSize = sizeof(cfg->szConfigFile);
 	RegQueryValueEx(hKey, REG_NAME_CONFIGFILE, 0, &dwType, (LPBYTE)&cfg->szConfigFile, &dwSize);
@@ -76,6 +82,9 @@ void WriteRegistry(DriverConfig *cfg)
 	RegSetValueEx(hKey, REG_NAME_DEFPROG, 0, REG_DWORD, (LPBYTE)&cfg->nDefaultProgram, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_DRUMCHANNELS, 0, REG_DWORD, (LPBYTE)&cfg->nDrumChannels, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_QUIETCHANNELS, 0, REG_DWORD, (LPBYTE)&cfg->nQuietChannels, sizeof(DWORD));
+	RegSetValueEx(hKey, REG_NAME_REVERBENABLED, 0, REG_DWORD, (LPBYTE)&cfg->fReverbEnabled, sizeof(DWORD));
+	RegSetValueEx(hKey, REG_NAME_REVERBLEVEL, 0, REG_DWORD, (LPBYTE)&cfg->nReverbLevel, sizeof(DWORD));
+	RegSetValueEx(hKey, REG_NAME_REVERBPRESET, 0, REG_DWORD, (LPBYTE)&cfg->nReverbPreset, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_CONFIGFILE, 0, REG_SZ, 
 				(LPBYTE)&cfg->szConfigFile, sizeof(TCHAR) * (_tcslen(cfg->szConfigFile) + 1));
 	RegSetValueEx(hKey, REG_NAME_DEFINST, 0, REG_SZ, 

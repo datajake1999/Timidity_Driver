@@ -14,6 +14,125 @@
 static HINSTANCE hInst;
 static DriverConfig cfg;
 
+static const TCHAR ReverbPresetNames[][32] =
+{
+	_T("GENERIC"),
+	_T("PADDEDCELL"),
+	_T("ROOM"),
+	_T("BATHROOM"),
+	_T("LIVINGROOM"),
+	_T("STONEROOM"),
+	_T("AUDITORIUM"),
+	_T("CONCERTHALL"),
+	_T("CAVE"),
+	_T("ARENA"),
+	_T("HANGAR"),
+	_T("CARPETEDHALLWAY"),
+	_T("HALLWAY"),
+	_T("STONECORRIDOR"),
+	_T("ALLEY"),
+	_T("FOREST"),
+	_T("CITY"),
+	_T("MOUNTAINS"),
+	_T("QUARRY"),
+	_T("PLAIN"),
+	_T("PARKINGLOT"),
+	_T("SEWERPIPE"),
+	_T("UNDERWATER"),
+	_T("DRUGGED"),
+	_T("DIZZY"),
+	_T("PSYCHOTIC"),
+	_T("CASTLE_SMALLROOM"),
+	_T("CASTLE_SHORTPASSAGE"),
+	_T("CASTLE_MEDIUMROOM"),
+	_T("CASTLE_LARGEROOM"),
+	_T("CASTLE_LONGPASSAGE"),
+	_T("CASTLE_HALL"),
+	_T("CASTLE_CUPBOARD"),
+	_T("CASTLE_COURTYARD"),
+	_T("CASTLE_ALCOVE"),
+	_T("FACTORY_SMALLROOM"),
+	_T("FACTORY_SHORTPASSAGE"),
+	_T("FACTORY_MEDIUMROOM"),
+	_T("FACTORY_LARGEROOM"),
+	_T("FACTORY_LONGPASSAGE"),
+	_T("FACTORY_HALL"),
+	_T("FACTORY_CUPBOARD"),
+	_T("FACTORY_COURTYARD"),
+	_T("FACTORY_ALCOVE"),
+	_T("ICEPALACE_SMALLROOM"),
+	_T("ICEPALACE_SHORTPASSAGE"),
+	_T("ICEPALACE_MEDIUMROOM"),
+	_T("ICEPALACE_LARGEROOM"),
+	_T("ICEPALACE_LONGPASSAGE"),
+	_T("ICEPALACE_HALL"),
+	_T("ICEPALACE_CUPBOARD"),
+	_T("ICEPALACE_COURTYARD"),
+	_T("ICEPALACE_ALCOVE"),
+	_T("SPACESTATION_SMALLROOM"),
+	_T("SPACESTATION_SHORTPASSAGE"),
+	_T("SPACESTATION_MEDIUMROOM"),
+	_T("SPACESTATION_LARGEROOM"),
+	_T("SPACESTATION_LONGPASSAGE"),
+	_T("SPACESTATION_HALL"),
+	_T("SPACESTATION_CUPBOARD"),
+	_T("SPACESTATION_ALCOVE"),
+	_T("WOODEN_SMALLROOM"),
+	_T("WOODEN_SHORTPASSAGE"),
+	_T("WOODEN_MEDIUMROOM"),
+	_T("WOODEN_LARGEROOM"),
+	_T("WOODEN_LONGPASSAGE"),
+	_T("WOODEN_HALL"),
+	_T("WOODEN_CUPBOARD"),
+	_T("WOODEN_COURTYARD"),
+	_T("WOODEN_ALCOVE"),
+	_T("SPORT_EMPTYSTADIUM"),
+	_T("SPORT_SQUASHCOURT"),
+	_T("SPORT_SMALLSWIMMINGPOOL"),
+	_T("SPORT_LARGESWIMMINGPOOL"),
+	_T("SPORT_GYMNASIUM"),
+	_T("SPORT_FULLSTADIUM"),
+	_T("SPORT_STADIUMTANNOY"),
+	_T("PREFAB_WORKSHOP"),
+	_T("PREFAB_SCHOOLROOM"),
+	_T("PREFAB_PRACTISEROOM"),
+	_T("PREFAB_OUTHOUSE"),
+	_T("PREFAB_CARAVAN"),
+	_T("DOME_TOMB"),
+	_T("PIPE_SMALL"),
+	_T("DOME_SAINTPAULS"),
+	_T("PIPE_LONGTHIN"),
+	_T("PIPE_LARGE"),
+	_T("PIPE_RESONANT"),
+	_T("OUTDOORS_BACKYARD"),
+	_T("OUTDOORS_ROLLINGPLAINS"),
+	_T("OUTDOORS_DEEPCANYON"),
+	_T("OUTDOORS_CREEK"),
+	_T("OUTDOORS_VALLEY"),
+	_T("MOOD_HEAVEN"),
+	_T("MOOD_HELL"),
+	_T("MOOD_MEMORY"),
+	_T("DRIVING_COMMENTATOR"),
+	_T("DRIVING_PITGARAGE"),
+	_T("DRIVING_INCAR_RACER"),
+	_T("DRIVING_INCAR_SPORTS"),
+	_T("DRIVING_INCAR_LUXURY"),
+	_T("DRIVING_FULLGRANDSTAND"),
+	_T("DRIVING_EMPTYGRANDSTAND"),
+	_T("DRIVING_TUNNEL"),
+	_T("CITY_STREETS"),
+	_T("CITY_SUBWAY"),
+	_T("CITY_MUSEUM"),
+	_T("CITY_LIBRARY"),
+	_T("CITY_UNDERPASS"),
+	_T("CITY_ABANDONED"),
+	_T("DUSTYROOM"),
+	_T("CHAPEL"),
+	_T("SMALLWATERROOM")
+};
+
+#define NUM_REVERB_PRESETS (sizeof(ReverbPresetNames)/sizeof(ReverbPresetNames[0]))
+
 static UINT WINAPI HookProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	return 0;
@@ -213,6 +332,7 @@ static BOOL WINAPI QuietDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 
 static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	UINT i;
 	switch (message)
 	{
 	case WM_INITDIALOG:
@@ -231,11 +351,20 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		cfg.nDefaultProgram = DEFAULT_PROGRAM;
 		cfg.nDrumChannels = DEFAULT_DRUMCHANNELS;
 		cfg.nQuietChannels = 0;
+		cfg.fReverbEnabled = FALSE;
+		cfg.nReverbLevel = 100;
+		cfg.nReverbPreset = 0;
 		ReadRegistry(&cfg);
 		SendDlgItemMessage(hWnd, IDC_CTRATES, UDM_SETRANGE32, cfg.nSampleRate/MAX_CONTROL_RATIO, cfg.nSampleRate);
 		SendDlgItemMessage(hWnd, IDC_VOICESS, UDM_SETRANGE32, 1, MAX_VOICES);
 		SendDlgItemMessage(hWnd, IDC_AMPS, UDM_SETRANGE32, 0, MAX_AMPLIFICATION);
 		SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_SETRANGE32, 0, 127);
+		SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_SETRANGE, 0, MAKELONG(0, 100));
+		SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_SETPAGESIZE, 0, 10);
+		for (i = 0; i < NUM_REVERB_PRESETS; i++)
+		{
+			SendDlgItemMessage(hWnd, IDC_REVERBPRESET, CB_ADDSTRING, 0, (LPARAM)ReverbPresetNames[i]);
+		}
 		SetDlgItemText(hWnd, IDC_CFG, cfg.szConfigFile);
 		SetDlgItemInt(hWnd, IDC_SAMPRATE, cfg.nSampleRate, FALSE);
 		SendDlgItemMessage(hWnd, IDC_CTRATES, UDM_SETPOS32, 0, cfg.nControlRate);
@@ -271,6 +400,12 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		}
 		SetDlgItemText(hWnd, IDC_DEFINST, cfg.szDefaultInstrument);
 		SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_SETPOS32, 0, cfg.nDefaultProgram);
+		if (cfg.fReverbEnabled)
+		{
+			CheckDlgButton(hWnd, IDC_REVERBENABLED, BST_CHECKED);
+		}
+		SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_SETPOS, TRUE, (LPARAM)cfg.nReverbLevel);
+		SendDlgItemMessage(hWnd, IDC_REVERBPRESET, CB_SETCURSEL, cfg.nReverbPreset, 0);
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -417,6 +552,16 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			{
 				cfg.nDefaultProgram = 0;
 			}
+			if (IsDlgButtonChecked(hWnd, IDC_REVERBENABLED))
+			{
+				cfg.fReverbEnabled = TRUE;
+			}
+			else
+			{
+				cfg.fReverbEnabled = FALSE;
+			}
+			cfg.nReverbLevel = SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_GETPOS, 0, 0);
+			cfg.nReverbPreset = SendDlgItemMessage(hWnd, IDC_REVERBPRESET, CB_GETCURSEL, 0, 0);
 			WriteRegistry(&cfg);
 			if (LOWORD(wParam) == IDOK)
 			{

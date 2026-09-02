@@ -18,6 +18,9 @@ typedef struct {
 	int nDefaultProgram;
 	int nDrumChannels;
 	int nQuietChannels;
+	BOOL fReverbEnabled;
+	int nReverbLevel;
+	int nReverbPreset;
 } DriverConfig;
 
 #ifdef __cplusplus

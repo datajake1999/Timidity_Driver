@@ -50,6 +50,9 @@ int main(int argc, char *argv[])
 	cfg->nDefaultProgram = DEFAULT_PROGRAM;
 	cfg->nDrumChannels = DEFAULT_DRUMCHANNELS;
 	cfg->nQuietChannels = 0;
+	cfg->fReverbEnabled = FALSE;
+	cfg->nReverbLevel = 100;
+	cfg->nReverbPreset = 0;
 	ReadRegistry(cfg);
 	if (cfg->nSampleRate > MAX_OUTPUT_RATE)
 	{
@@ -114,6 +117,9 @@ int main(int argc, char *argv[])
 			timid_set_quiet_channel(synth, i, 0);
 		}
 	}
+	timid_set_reverb_enabled(synth, cfg->fReverbEnabled);
+	timid_set_reverb_level(synth, cfg->nReverbLevel);
+	timid_set_reverb_preset(synth, cfg->nReverbPreset);
 #ifdef _UNICODE
 	WideCharToMultiByte(CP_ACP, 0, cfg->szDefaultInstrument, -1, szAnsi, MAX_PATH, NULL, NULL);
 #else

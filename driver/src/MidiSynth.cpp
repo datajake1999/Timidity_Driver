@@ -410,6 +410,9 @@ int MidiSynth::Init() {
 	cfg.nDefaultProgram = DEFAULT_PROGRAM;
 	cfg.nDrumChannels = DEFAULT_DRUMCHANNELS;
 	cfg.nQuietChannels = 0;
+	cfg.fReverbEnabled = FALSE;
+	cfg.nReverbLevel = 100;
+	cfg.nReverbPreset = 0;
 	ReadRegistry(&cfg);
 	LoadSettings();
 	buffer = new Bit8u[numChannels * (bitDepth / 8) * bufferSize]; // each frame consists of two samples for both the Left and Right channels
@@ -449,6 +452,9 @@ int MidiSynth::Init() {
 			timid_set_quiet_channel(synth, i, 0);
 		}
 	}
+	timid_set_reverb_enabled(synth, cfg.fReverbEnabled);
+	timid_set_reverb_level(synth, cfg.nReverbLevel);
+	timid_set_reverb_preset(synth, cfg.nReverbPreset);
 	char szAnsi[MAX_PATH];
 	memset(szAnsi, 0, sizeof(szAnsi));
 #ifdef _UNICODE
