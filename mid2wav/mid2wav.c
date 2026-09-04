@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
 	cfg->nDrumChannels = DEFAULT_DRUMCHANNELS;
 	cfg->nQuietChannels = 0;
 	cfg->fReverbEnabled = FALSE;
+	cfg->fReverbOnly = FALSE;
 	cfg->nReverbLevel = 100;
 	cfg->nReverbPreset = 0;
 	ReadRegistry(cfg);
@@ -118,6 +119,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	timid_set_reverb_enabled(synth, cfg->fReverbEnabled);
+	timid_set_reverb_only(synth, cfg->fReverbOnly);
 	timid_set_reverb_level(synth, cfg->nReverbLevel);
 	timid_set_reverb_preset(synth, cfg->nReverbPreset);
 #ifdef _UNICODE

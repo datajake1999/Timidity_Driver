@@ -411,6 +411,7 @@ int MidiSynth::Init() {
 	cfg.nDrumChannels = DEFAULT_DRUMCHANNELS;
 	cfg.nQuietChannels = 0;
 	cfg.fReverbEnabled = FALSE;
+	cfg.fReverbOnly = FALSE;
 	cfg.nReverbLevel = 100;
 	cfg.nReverbPreset = 0;
 	ReadRegistry(&cfg);
@@ -453,6 +454,7 @@ int MidiSynth::Init() {
 		}
 	}
 	timid_set_reverb_enabled(synth, cfg.fReverbEnabled);
+	timid_set_reverb_only(synth, cfg.fReverbOnly);
 	timid_set_reverb_level(synth, cfg.nReverbLevel);
 	timid_set_reverb_preset(synth, cfg.nReverbPreset);
 	char szAnsi[MAX_PATH];
