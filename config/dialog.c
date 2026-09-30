@@ -131,7 +131,7 @@ static const TCHAR ReverbPresetNames[][32] =
 	_T("Small Water Room")
 };
 
-#define NUM_REVERB_PRESETS (sizeof(ReverbPresetNames)/sizeof(ReverbPresetNames[0]))
+#define NUM_REVERB_PRESETS (sizeof(ReverbPresetNames) / sizeof(ReverbPresetNames[0]))
 
 static UINT WINAPI HookProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -355,6 +355,8 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		cfg.fReverbOnly = FALSE;
 		cfg.nReverbLevel = 100;
 		cfg.nReverbPreset = 0;
+		cfg.fChorusEnabled = FALSE;
+		cfg.nChorusDepth = 25;
 		ReadRegistry(&cfg);
 		SendDlgItemMessage(hWnd, IDC_CTRATES, UDM_SETRANGE32, cfg.nSampleRate/MAX_CONTROL_RATIO, cfg.nSampleRate);
 		SendDlgItemMessage(hWnd, IDC_VOICESS, UDM_SETRANGE32, 1, MAX_VOICES);
@@ -362,6 +364,8 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		SendDlgItemMessage(hWnd, IDC_DEFPROGS, UDM_SETRANGE32, 0, 127);
 		SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_SETRANGE, 0, MAKELONG(0, 100));
 		SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_SETPAGESIZE, 0, 10);
+		SendDlgItemMessage(hWnd, IDC_CHORUSDEPTH, TBM_SETRANGE, 0, MAKELONG(0, 100));
+		SendDlgItemMessage(hWnd, IDC_CHORUSDEPTH, TBM_SETPAGESIZE, 0, 10);
 		for (i = 0; i < NUM_REVERB_PRESETS; i++)
 		{
 			SendDlgItemMessage(hWnd, IDC_REVERBPRESET, CB_ADDSTRING, 0, (LPARAM)ReverbPresetNames[i]);
@@ -411,6 +415,11 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		}
 		SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_SETPOS, TRUE, (LPARAM)cfg.nReverbLevel);
 		SendDlgItemMessage(hWnd, IDC_REVERBPRESET, CB_SETCURSEL, cfg.nReverbPreset, 0);
+		if (cfg.fChorusEnabled)
+		{
+			CheckDlgButton(hWnd, IDC_CHORUSENABLED, BST_CHECKED);
+		}
+		SendDlgItemMessage(hWnd, IDC_CHORUSDEPTH, TBM_SETPOS, TRUE, (LPARAM)cfg.nChorusDepth);
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -575,6 +584,15 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			}
 			cfg.nReverbLevel = SendDlgItemMessage(hWnd, IDC_REVERBLEVEL, TBM_GETPOS, 0, 0);
 			cfg.nReverbPreset = SendDlgItemMessage(hWnd, IDC_REVERBPRESET, CB_GETCURSEL, 0, 0);
+			if (IsDlgButtonChecked(hWnd, IDC_CHORUSENABLED))
+			{
+				cfg.fChorusEnabled = TRUE;
+			}
+			else
+			{
+				cfg.fChorusEnabled = FALSE;
+			}
+			cfg.nChorusDepth = SendDlgItemMessage(hWnd, IDC_CHORUSDEPTH, TBM_GETPOS, 0, 0);
 			WriteRegistry(&cfg);
 			if (LOWORD(wParam) == IDOK)
 			{

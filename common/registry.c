@@ -24,6 +24,8 @@
 #define REG_NAME_REVERBONLY		_T("ReverbOnly")
 #define REG_NAME_REVERBLEVEL		_T("ReverbLevel")
 #define REG_NAME_REVERBPRESET		_T("ReverbPreset")
+#define REG_NAME_CHORUSENABLED		_T("ChorusEnabled")
+#define REG_NAME_CHORUSDEPTH		_T("ChorusDepth")
 
 void ReadRegistry(DriverConfig *cfg)
 {
@@ -52,6 +54,8 @@ void ReadRegistry(DriverConfig *cfg)
 	RegQueryValueEx(hKey, REG_NAME_REVERBONLY, 0, &dwType, (LPBYTE)&cfg->fReverbOnly, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_REVERBLEVEL, 0, &dwType, (LPBYTE)&cfg->nReverbLevel, &dwSize);
 	RegQueryValueEx(hKey, REG_NAME_REVERBPRESET, 0, &dwType, (LPBYTE)&cfg->nReverbPreset, &dwSize);
+	RegQueryValueEx(hKey, REG_NAME_CHORUSENABLED, 0, &dwType, (LPBYTE)&cfg->fChorusEnabled, &dwSize);
+	RegQueryValueEx(hKey, REG_NAME_CHORUSDEPTH, 0, &dwType, (LPBYTE)&cfg->nChorusDepth, &dwSize);
 
 	dwSize = sizeof(cfg->szConfigFile);
 	RegQueryValueEx(hKey, REG_NAME_CONFIGFILE, 0, &dwType, (LPBYTE)&cfg->szConfigFile, &dwSize);
@@ -88,6 +92,8 @@ void WriteRegistry(DriverConfig *cfg)
 	RegSetValueEx(hKey, REG_NAME_REVERBONLY, 0, REG_DWORD, (LPBYTE)&cfg->fReverbOnly, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_REVERBLEVEL, 0, REG_DWORD, (LPBYTE)&cfg->nReverbLevel, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_REVERBPRESET, 0, REG_DWORD, (LPBYTE)&cfg->nReverbPreset, sizeof(DWORD));
+	RegSetValueEx(hKey, REG_NAME_CHORUSENABLED, 0, REG_DWORD, (LPBYTE)&cfg->fChorusEnabled, sizeof(DWORD));
+	RegSetValueEx(hKey, REG_NAME_CHORUSDEPTH, 0, REG_DWORD, (LPBYTE)&cfg->nChorusDepth, sizeof(DWORD));
 	RegSetValueEx(hKey, REG_NAME_CONFIGFILE, 0, REG_SZ, 
 				(LPBYTE)&cfg->szConfigFile, sizeof(TCHAR) * (_tcslen(cfg->szConfigFile) + 1));
 	RegSetValueEx(hKey, REG_NAME_DEFINST, 0, REG_SZ, 
