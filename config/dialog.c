@@ -357,6 +357,7 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		cfg.nReverbPreset = 0;
 		cfg.fChorusEnabled = FALSE;
 		cfg.nChorusDepth = 25;
+		cfg.fDitherEnabled = FALSE;
 		ReadRegistry(&cfg);
 		SendDlgItemMessage(hWnd, IDC_CTRATES, UDM_SETRANGE32, cfg.nSampleRate/MAX_CONTROL_RATIO, cfg.nSampleRate);
 		SendDlgItemMessage(hWnd, IDC_VOICESS, UDM_SETRANGE32, 1, MAX_VOICES);
@@ -420,6 +421,10 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			CheckDlgButton(hWnd, IDC_CHORUSENABLED, BST_CHECKED);
 		}
 		SendDlgItemMessage(hWnd, IDC_CHORUSDEPTH, TBM_SETPOS, TRUE, (LPARAM)cfg.nChorusDepth);
+		if (cfg.fDitherEnabled)
+		{
+			CheckDlgButton(hWnd, IDC_DITHERENABLED, BST_CHECKED);
+		}
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -593,6 +598,14 @@ static BOOL WINAPI DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				cfg.fChorusEnabled = FALSE;
 			}
 			cfg.nChorusDepth = SendDlgItemMessage(hWnd, IDC_CHORUSDEPTH, TBM_GETPOS, 0, 0);
+			if (IsDlgButtonChecked(hWnd, IDC_DITHERENABLED))
+			{
+				cfg.fDitherEnabled = TRUE;
+			}
+			else
+			{
+				cfg.fDitherEnabled = FALSE;
+			}
 			WriteRegistry(&cfg);
 			if (LOWORD(wParam) == IDOK)
 			{

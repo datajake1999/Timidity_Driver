@@ -416,6 +416,7 @@ int MidiSynth::Init() {
 	cfg.nReverbPreset = 0;
 	cfg.fChorusEnabled = FALSE;
 	cfg.nChorusDepth = 25;
+	cfg.fDitherEnabled = FALSE;
 	ReadRegistry(&cfg);
 	LoadSettings();
 	buffer = new Bit8u[numChannels * (bitDepth / 8) * bufferSize]; // each frame consists of two samples for both the Left and Right channels
@@ -461,6 +462,7 @@ int MidiSynth::Init() {
 	timid_set_reverb_preset(synth, cfg.nReverbPreset);
 	timid_set_chorus_enabled(synth, cfg.fChorusEnabled);
 	timid_set_chorus_depth(synth, cfg.nChorusDepth);
+	timid_set_dither_enabled(synth, cfg.fDitherEnabled);
 	char szAnsi[MAX_PATH];
 	memset(szAnsi, 0, sizeof(szAnsi));
 #ifdef _UNICODE

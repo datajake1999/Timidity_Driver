@@ -24,6 +24,7 @@ typedef struct {
 	int nReverbPreset;
 	BOOL fChorusEnabled;
 	int nChorusDepth;
+	BOOL fDitherEnabled;
 } DriverConfig;
 
 #ifdef __cplusplus

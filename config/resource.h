@@ -45,40 +45,41 @@
 #define IDC_REVERBPRESET                1026
 #define IDC_CHORUSENABLED               1027
 #define IDC_CHORUSDEPTH                 1028
-#define IDC_ABOUT                       1029
-#define IDC_APPLY                       1030
-#define IDC_DCHAN01                     1031
-#define IDC_DCHAN02                     1032
-#define IDC_DCHAN03                     1033
-#define IDC_DCHAN04                     1034
-#define IDC_DCHAN05                     1035
-#define IDC_DCHAN06                     1036
-#define IDC_DCHAN07                     1037
-#define IDC_DCHAN08                     1038
-#define IDC_DCHAN09                     1039
-#define IDC_DCHAN10                     1040
-#define IDC_DCHAN11                     1041
-#define IDC_DCHAN12                     1042
-#define IDC_DCHAN13                     1043
-#define IDC_DCHAN14                     1044
-#define IDC_DCHAN15                     1045
-#define IDC_DCHAN16                     1046
-#define IDC_QCHAN01                     1047
-#define IDC_QCHAN02                     1048
-#define IDC_QCHAN03                     1049
-#define IDC_QCHAN04                     1050
-#define IDC_QCHAN05                     1051
-#define IDC_QCHAN06                     1052
-#define IDC_QCHAN07                     1053
-#define IDC_QCHAN08                     1054
-#define IDC_QCHAN09                     1055
-#define IDC_QCHAN10                     1056
-#define IDC_QCHAN11                     1057
-#define IDC_QCHAN12                     1058
-#define IDC_QCHAN13                     1059
-#define IDC_QCHAN14                     1060
-#define IDC_QCHAN15                     1061
-#define IDC_QCHAN16                     1062
+#define IDC_DITHERENABLED               1029
+#define IDC_ABOUT                       1030
+#define IDC_APPLY                       1031
+#define IDC_DCHAN01                     1032
+#define IDC_DCHAN02                     1033
+#define IDC_DCHAN03                     1034
+#define IDC_DCHAN04                     1035
+#define IDC_DCHAN05                     1036
+#define IDC_DCHAN06                     1037
+#define IDC_DCHAN07                     1038
+#define IDC_DCHAN08                     1039
+#define IDC_DCHAN09                     1040
+#define IDC_DCHAN10                     1041
+#define IDC_DCHAN11                     1042
+#define IDC_DCHAN12                     1043
+#define IDC_DCHAN13                     1044
+#define IDC_DCHAN14                     1045
+#define IDC_DCHAN15                     1046
+#define IDC_DCHAN16                     1047
+#define IDC_QCHAN01                     1048
+#define IDC_QCHAN02                     1049
+#define IDC_QCHAN03                     1050
+#define IDC_QCHAN04                     1051
+#define IDC_QCHAN05                     1052
+#define IDC_QCHAN06                     1053
+#define IDC_QCHAN07                     1054
+#define IDC_QCHAN08                     1055
+#define IDC_QCHAN09                     1056
+#define IDC_QCHAN10                     1057
+#define IDC_QCHAN11                     1058
+#define IDC_QCHAN12                     1059
+#define IDC_QCHAN13                     1060
+#define IDC_QCHAN14                     1061
+#define IDC_QCHAN15                     1062
+#define IDC_QCHAN16                     1063
 
 // Next default values for new objects
 // 
@@ -86,7 +87,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        409
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1063
+#define _APS_NEXT_CONTROL_VALUE         1064
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
